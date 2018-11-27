@@ -10,6 +10,9 @@ module.exports = {
   },
   mode: 'development',
   devtool: 'source-map',
+  resolve: {
+    extensions: ['.js', '.grs', '.css'],
+  },
   devServer: {
     contentBase: __dirname,
     inline: true,
@@ -18,9 +21,11 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /(\.js)$/,
+        test: /(\.js|\.grs)$/,
         use: [{
           loader: "babel-loader",
+        },{
+          loader: "grass-loader",
         }]
       },
     ]

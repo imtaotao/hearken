@@ -1,0 +1,18 @@
+<template>
+  <div>{{ tt }}</div>
+</template>
+
+<script>
+  import Grass from 'tt-grass'
+  import Hearken from '../src'
+
+  export default class Root extends Grass.Component {
+    constructor () {
+      super()
+      this.state = { tt: 1 }
+      const h = new Hearken()
+      console.log(h);
+      window.h = h
+    }
+  }
+</script>
