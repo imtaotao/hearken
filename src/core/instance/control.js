@@ -4,26 +4,17 @@ export default function audioControlHelper (HearkenProto) {
   // connnect order
   // audioContext.destination -> gainNode -> analyser -> convolver
   controlHelp.connectNodes = connectNodes
-  controlHelp.getContextState = getContextState
-  controlHelp.getVisualizerData = getVisualizerData
 }
 
-function getContextState () {
-  return this.Hearken.AudioContext.state
-}
-
-function getVisualizerData () {
-  const analyser = this.Hearken.container.analyser
-  if (!analyser) return []
-
-  const array = new Uint8Array(analyser.frequencyBinCount)
-  analyser.getByteFrequencyData(array)
-
-  return array
-}
+const defalutHertz = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
 
 function connectNodes (audioNodes) {
   const { tool, options, container, AudioContext } = this.Hearken
+  let { hertz, filter } = options
+
+  if (hertz === 'defulat') {
+    hertz = defalutHertz
+  }
 
   for (let i = 0, len = audioNodes.length; i < len; i++) {
     const node = audioNodes[i]
@@ -33,15 +24,14 @@ function connectNodes (audioNodes) {
       container[node].connect(AudioContext.destination)
     } else {
       let preNode = container[audioNodes[i - 1]]
-      const hertz = options.hertz
 
       // connect the filter node in advance of buffersouce
-      if (node === 'buffersouce' && hertz) {
+      if (node === 'buffersouce' && hertz && filter) {
         hertz.forEach(hz => {
           const nowFilter = tool.createFilter()
           nowFilter.connect(preNode)
           preNode = nowFilter
-          container.filter[hz] = nowFilter
+          container.filterNodes[hz] = nowFilter
         })
       }
       container[node].connect(preNode)

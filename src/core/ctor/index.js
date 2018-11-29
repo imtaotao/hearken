@@ -1,11 +1,9 @@
 import version from './version'
-import setDecodeMethod from '../helper/decode'
 
-export default function createGlobalApi (Hearken) {
+export default function createConstructorApi (Hearken) {
   Hearken.version = version
   // AudioContext is only
   Hearken.AudioContext = createAudioContext()
-  setDecodeMethod(Hearken)
 }
 
 function createAudioContext () {

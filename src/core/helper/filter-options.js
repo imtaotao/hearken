@@ -4,35 +4,40 @@
  * 音量大小： 0 - 1
  * 是否循环： loop -> boolean
  * 傅里叶变换参数： fftSize -> number
+ * 赫兹：hertz -> array
+ * 均衡器： filter -> {string: number[]}
  **/
-import { isUndef, isArrayBuffer, isAudioBuffer } from '../util'
+import { isUndef, isArrayBuffer, isAudioBuffer } from '../../util'
 
 
 export const PARTICAL = 'partical'
 export const COMPLETE = 'complete'
 const VOLUME = 0.5
 const FFTSIZE = 16
-const HERTZ = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
+
+const FilterAndHertz = v => Array.isArray(v) || v === 'default'
 
 export default function filterOptions (options) {
   const source = options.source
   const mode = options.mode || COMPLETE
   const volume = options.volume || VOLUME
-  const loop = isUndef(options.loop)
-    ? false 
-    : true
+  const loop = !!options.loop
+
+  const hertz = FilterAndHertz(options.hertz)
+    ? options.hertz
+    : null
+  
+  const filter = FilterAndHertz(options.filter)
+    ? options.filter
+    : null
 
   let fftSize = options.fftSize || FFTSIZE
   fftSize > 16
     ? FFTSIZE
     : fftSize
-
-  let hertz = options.hertz === 'default'
-    ? HERTZ
-    : options.hertz
-
-  // maybeWarn(source)
-  return { source, mode, hertz, fftSize, volume, loop }
+  
+  maybeWarn(source)
+  return { source, mode, hertz, filter, fftSize, volume, loop }
 }
 
 function maybeWarn (source) {

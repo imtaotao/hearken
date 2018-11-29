@@ -1,6 +1,6 @@
-import filterOptions from './helper/filter-options'
-import createGlobalApi from './global-api'
-import createInstanceApi from './instance'
+import createConstructorApi from './core/ctor'
+import createInstanceApi from './core/instance'
+import filterOptions from './core/helper/filter-options'
 
 export default function Hearken (options = {}) {
   this.options = filterOptions(options)
@@ -11,5 +11,5 @@ export default function Hearken (options = {}) {
   this.controlHelp.Hearken = this
 }
 
-createGlobalApi(Hearken)
 createInstanceApi(Hearken)
+createConstructorApi(Hearken)

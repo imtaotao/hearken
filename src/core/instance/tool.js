@@ -1,3 +1,5 @@
+import { isArrayBuffer } from '../../util'
+
 export default function setAudioTool (HearkenProto) {
   const tool = HearkenProto.tool = Object.create(null)
 
@@ -44,5 +46,17 @@ export default function setAudioTool (HearkenProto) {
     ra.gain.value = gainVal
 
     return ra
+  }
+
+  tool.decode = function (arraybuffer) {
+    if (!isArrayBuffer) {
+      throw new Error('decode source must be a "arraybuffer, but now it\'s a' + typeof arraybuffer)
+    }
+  
+    return new Promise(resolve => {
+      this.Hearken.AudioContext.decodeAudioData(arraybuffer, buffer => {
+        resolve(buffer)
+      })
+    })
   }
 }
