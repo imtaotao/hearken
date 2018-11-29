@@ -1,6 +1,6 @@
 import setHooks from './hooks'
-import setAudioTool from './tool'
-import createExportApi from './proto-api'
+import setAudioTool from './nodes'
+import createExportApi from './prototype'
 import audioControlHelper from './control'
 import createRuntimeContainer from './container'
 
