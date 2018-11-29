@@ -28,7 +28,7 @@ function connectNodes (audioNodes) {
       // connect the filter node in advance of buffersouce
       if (node === 'buffersouce' && hertz && filter) {
         hertz.forEach(hz => {
-          const nowFilter = tool.createFilter()
+          const nowFilter = tool.createFilter(hz)
           nowFilter.connect(preNode)
           preNode = nowFilter
           container.filterNodes[hz] = nowFilter

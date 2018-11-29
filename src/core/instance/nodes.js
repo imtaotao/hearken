@@ -3,17 +3,17 @@ import { isArrayBuffer } from '../../util'
 export default function setAudioTool (HearkenProto) {
   const tool = HearkenProto.tool = Object.create(null)
 
-  // get buffer source
+  // create AudioBufferSourceNode node
   tool.createBufferSource = function () {
     return this.Hearken.AudioContext.createBufferSource()
   }
 
-  // get equalizer object
+  // create equalizer node
   tool.createConvolver = function () {
     return this.Hearken.AudioContext.createConvolver()
   }
   
-  // get source analyse object
+  // create source analyse node
   tool.createAnalyser = function () {
     const Hearken = this.Hearken
     const analyser = Hearken.AudioContext.createAnalyser()
@@ -22,7 +22,7 @@ export default function setAudioTool (HearkenProto) {
     return analyser
   }
 
-  // get volume control object
+  // create volume control node
   tool.createGainNode = function () {
     const ac = this.Hearken.AudioContext
     return ac[
@@ -32,22 +32,19 @@ export default function setAudioTool (HearkenProto) {
     ]()
   }
 
-  // get filter object
-  tool.createFilter = function (gainVal = 0, type = 'peaking') {
-    hertz = this.Hearken.options.hertz
-    if (!hertz) {
-      throw new Error('hertz is' + typeof hertz)
-    }
-
+  // create filter node
+  tool.createFilter = function (hz, gainVal = 0, type = 'peaking') {
     const ra = HearkenProto.AudioContext.createBiquadFilter()
+
     ra.type = type
     ra.Q.value = 10
-    ra.frequency.value = hertz
+    ra.frequency.value = hz
     ra.gain.value = gainVal
 
     return ra
   }
 
+  // decode arraybuffer to audiobuffer
   tool.decode = function (arraybuffer) {
     if (!isArrayBuffer) {
       throw new Error('decode source must be a "arraybuffer, but now it\'s a' + typeof arraybuffer)
