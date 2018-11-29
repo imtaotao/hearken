@@ -9,7 +9,7 @@
 </template>
 
 <script>
-  import Grass from 'tt-grass'
+  import Grass from '@rustle/grass'
   import dealWithMusic from './music'
 
   export default class Root extends Grass.Component {

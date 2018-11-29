@@ -1,8 +1,10 @@
+import { soundPlayEnded } from './util'
 import { isNumber } from '../../../util'
 
-// if the first play or already stop the sound, we need to call start method play sound
+// if the first play, we need to call start method play sound, until call stop method
 let canCallStart = true
 let soundPlayEnd = true
+
 
 /**
  * this method allow forward or back toogle the sound, but if the sound is pause state
@@ -30,7 +32,7 @@ export function start (time, duration) {
   bufferSource.loop = options.loop
   bufferSource.onended = e => {
     // if call stop in start, then dispatch "end" event, we need prevent
-    soundPlayEnd && this.$callHooks('playEnd', e)
+    soundPlayEnd && soundPlayEnded(this, e)
     soundPlayEnd = true
   }
   
@@ -45,7 +47,8 @@ export function start (time, duration) {
   
   this.setVolume()
   this.setFilterStyle(filterStyleName)
-  this.hooks.start()
+  this.$callHooks('start')
+
   canCallStart = false
 }
 
@@ -63,16 +66,18 @@ export function stop () {
   stopMusic.call(bufferSource)
   canCallStart = true
   soundPlayEnd = true
+
+  this.$callHooks('stop')
 }
 
-// return promise
+// if the sound state is pause, we need to resume playback, otherwise we can call start method
 export function play () {
-  if (canCallStart) {
-    const { options, container, hooks, tool } = this
+  if (canCallStart && this.getState() !== 'suspended') {
+    const { options, container, tool } = this
     // play sound, call hooks function and changed promise state
     const callPlay = resolve => {
       this.start()
-      hooks.play()
+      this.$callHooks('play')
       resolve()
     }
 
@@ -97,7 +102,7 @@ export function play () {
 export function pause () {
   if (this.getState() === 'running' && !canCallStart) {
     return this.AudioContext.suspend().then(() => {
-      this.hooks.pause()
+      this.$callHooks('playPause')
     })
   }
 }

@@ -548,6 +548,10 @@
     lodash "^4.17.10"
     to-fast-properties "^2.0.0"
 
+"@rustle/grass@^0.0.1-alpha.0":
+  version "0.0.1-alpha.0"
+  resolved "http://registry.npm.taobao.org/@rustle/grass/download/@rustle/grass-0.0.1-alpha.0.tgz#87e67fb11e1670a401cd78395077089199f54406"
+
 "@webassemblyjs/ast@1.7.11":
   version "1.7.11"
   resolved "http://registry.npm.taobao.org/@webassemblyjs/ast/download/@webassemblyjs/ast-1.7.11.tgz#b988582cafbb2b095e8b556526f30c90d057cace"
@@ -3968,10 +3972,6 @@ trim-right@^1.0.1:
 tslib@^1.9.0:
   version "1.9.3"
   resolved "http://registry.npm.taobao.org/tslib/download/tslib-1.9.3.tgz#d7e4dd79245d85428c4d7e4822a79917954ca286"
-
-tt-grass@^0.0.1-alpha.0:
-  version "0.0.1-alpha.0"
-  resolved "http://registry.npm.taobao.org/tt-grass/download/tt-grass-0.0.1-alpha.0.tgz#ae1782bb4e020685ce9696a516322d33cb4874ec"
 
 tty-browserify@0.0.0:
   version "0.0.0"

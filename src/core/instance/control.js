@@ -12,7 +12,7 @@ function connectNodes (audioNodes) {
   const { tool, options, container, AudioContext } = this.Hearken
   let { hertz, filter } = options
 
-  if (hertz === 'defulat') {
+  if (hertz === 'default') {
     hertz = defalutHertz
   }
 
@@ -26,7 +26,7 @@ function connectNodes (audioNodes) {
       let preNode = container[audioNodes[i - 1]]
 
       // connect the filter node in advance of buffersouce
-      if (node === 'buffersouce' && hertz && filter) {
+      if (node === 'bufferSource' && hertz && filter) {
         hertz.forEach(hz => {
           const nowFilter = tool.createFilter(hz)
           nowFilter.connect(preNode)

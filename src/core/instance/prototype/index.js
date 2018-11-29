@@ -1,6 +1,6 @@
 import { play, stop, start, pause } from './play'
 import { setVolume, setFilterStyle } from './set'
-import { callHooks, destroyInstance } from './util'
+import { callHooks, appendBuffer, destroyInstance } from './util'
 import { getState, getCurrentTime, getVisualizerData } from './get'
 
 export default function createExportApi (HearkenProto) {
@@ -22,5 +22,5 @@ export default function createExportApi (HearkenProto) {
   // util functions
   HearkenProto.destroy = destroyInstance
   HearkenProto.$callHooks = callHooks
-  
+  HearkenProto.appendBuffer = appendBuffer
 }

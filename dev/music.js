@@ -5,6 +5,7 @@ export default function dealWithMusic (arrayBuffer) {
     source: arrayBuffer,
     volume: 0.5,
     hertz: 'default',
+    filter: 'default',
     loop: false,
   })
 

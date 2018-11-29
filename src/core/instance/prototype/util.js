@@ -1,6 +1,8 @@
-// return promise
-export function destroyInstance () {
-  return this.AudioContext.close()
+import { isArrayBuffer } from '../../../util'
+import { acceptBuffer } from '../../helper/append-buffer'
+
+export function soundPlayEnded (Hearken, event) {
+  Hearken.$callHooks('playEnd', event)
 }
 
 export function callHooks (name, ...target) {
@@ -41,5 +43,20 @@ export function filterAssignment (filter, data, hertz) {
     if (nowFilter) {
       nowFilter.gain.value = val * 1.5
     }
+  }
+}
+
+/**
+ * the following apis are exposed to the outside
+ * */
+
+// return promise
+export function destroyInstance () {
+  return this.AudioContext.close()
+}
+
+export function appendBuffer (arrayBuffer) {
+  if (isArrayBuffer(arrayBuffer)) {
+    acceptBuffer(this, arrayBuffer)
   }
 }

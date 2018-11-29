@@ -18,7 +18,7 @@ export function setFilterStyle (styleName) {
   const { hertz, filter } = this.options
   if (!filter || !hertz) return
   
-  const args = filter === 'defualt'
+  const args = filter === 'default'
     ? getDefualtFilterArgs(styleName)
     : filter[styleName]
 

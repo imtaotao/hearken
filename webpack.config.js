@@ -26,6 +26,9 @@ module.exports = {
           loader: "babel-loader",
         },{
           loader: "grass-loader",
+          options: {
+            path: '@rustle/grass',
+          },
         }]
       },
     ]

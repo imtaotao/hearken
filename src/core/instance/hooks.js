@@ -3,7 +3,7 @@ export default function setHooks (HearkenProto) {
 
   hooks.play = () => {}
   hooks.start = () => {}
-  hooks.pause = () => {}
+  hooks.stop = () => {}
   hooks.playPause = () => {}
   hooks.playEnd = () => {}
   hooks.decodeEnd = () => {}
