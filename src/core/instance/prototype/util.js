@@ -6,7 +6,9 @@ export function soundPlayEnded (Hearken, event) {
 }
 
 export function callHooks (name, ...target) {
-  this.hooks[name].apply(this, target)
+  if (typeof this.hooks[name] === 'function') {
+    this.hooks[name].apply(this, target)
+  }
 }
 
 export function getDefualtFilterArgs (styleName) {

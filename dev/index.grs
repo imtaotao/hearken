@@ -42,7 +42,7 @@
 
     start () {
       if (this.Hearken) {
-        this.Hearken.start(50)
+        this.Hearken.start()
       }
     }
 
