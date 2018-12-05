@@ -7,7 +7,7 @@
  * 赫兹：hertz -> array
  * 均衡器： filter -> {string: number[]}
  **/
-import { isUndef, isArrayBuffer, isAudioBuffer } from '../../util'
+import { isUndef, isArrayBuffer } from '../../util'
 
 
 export const PARTICAL = 'partical'
@@ -44,7 +44,7 @@ function maybeWarn (source) {
   if (isUndef(source)) {
     throw new Error('Audio source is ' + typeof source)
   }
-  if (!isArrayBuffer(source) && !isAudioBuffer(source)) {
-    throw new Error('Audio source must be a "arraybuffer" or "audiobuffer"')
+  if (!isArrayBuffer(source)) {
+    throw new Error('Audio source must be a "arraybuffer".')
   }
 }

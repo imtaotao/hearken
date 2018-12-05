@@ -1,4 +1,5 @@
 import { isArrayBuffer } from '../../../util'
+import { COMPLETE } from '../../helper/filter-options'
 import { acceptBuffer } from '../../helper/append-buffer'
 
 export function soundPlayEnded (Hearken, event) {
@@ -57,8 +58,8 @@ export function destroyInstance () {
   return this.AudioContext.close()
 }
 
-export function appendBuffer (arrayBuffer) {
-  if (isArrayBuffer(arrayBuffer)) {
-    acceptBuffer(this, arrayBuffer)
+export function appendBuffer (buffer) {
+  if (this.options.mode === COMPLETE && isArrayBuffer(buffer)) {
+    acceptBuffer(this, buffer)
   }
 }

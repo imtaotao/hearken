@@ -1,3 +1,5 @@
+import { COMPLETE } from '../../helper/filter-options'
+import { random, isArrayBuffer } from '../../../util'
 import { filterAssignment, getDefualtFilterArgs } from './util'
 
 // set sound volume
@@ -26,4 +28,20 @@ export function setFilterStyle (styleName) {
     filterAssignment(this.container.filterNodes, filter, hertz)
     this.container.filterStyleName = styleName
   }
+}
+
+// this method is able to toggle audio source, return promoise
+export function replaceSound (buffer) {
+  if (!isArrayBuffer(buffer)) {
+    throw new Error('buffer is must be an "arrayBuffer".')
+  }
+  // buffer should be an arraybuffer
+  return this.tool.decode(buffer).then(audioBuffer => {
+    this.id = random()
+    this.options.source = buffer
+    this.container.audioBuffer = audioBuffer
+    if (this.options.mode === COMPLETE) {
+      this.container.bufferQueue = [buffer]
+    }
+  })
 }

@@ -1,10 +1,12 @@
 <template>
   <div>
-    <input type="file" @change="this.change.bind(this)"/>
+    <input value="永夜" id="musicName"/>
     <button @click="this.play.bind(this)">播放</button>
     <button @click="this.pause.bind(this)">暂停</button>
     <button @click="this.start.bind(this)">开始</button>
     <button @click="this.stop.bind(this)">停止</button>
+    <button @click="this.getMusic.bind(this)">getMusic</button>
+    <audio src="http://localhost:3000/getParticalMusic?name=永夜.mp3"></audio>
   </div>
 </template>
 
@@ -16,16 +18,9 @@
     constructor () {
       super()
       this.Hearken = null
-    }
-    
-    change (e) {
-      const file = e.target.files[0]
-      const render = new FileReader()
-
-      render.readAsArrayBuffer(file)
-      render.onload = () => {
-        this.Hearken = dealWithMusic(render.result)
-      }
+      setTimeout(() => {
+        document.getElementsByTagName('audio')[0].play()
+      }, 3000)
     }
 
     play () {
@@ -50,6 +45,32 @@
       if (this.Hearken) {
         this.Hearken.stop()
       }
+    }
+
+    getMusic () {
+      this.ajax(musicName.value, result => {
+        const data = result.response
+
+        if (!this.Hearken) {
+          this.Hearken = dealWithMusic(data)
+        } else {
+          console.log(this.Hearken.id);
+          this.Hearken.replaceSound(data)
+          .then(() => {
+            console.log(this.Hearken.id);
+            this.Hearken.start()
+          })
+        }
+      })
+    }
+
+    ajax (name, cb) {
+      const xhr = new XMLHttpRequest()
+      xhr.open('GET', 'http://localhost:3000/getMusic?name=' + name)
+      xhr.onload = e => cb(e.target)
+      xhr.withCredentials = true
+      xhr.responseType = 'arraybuffer'
+      xhr.send()
     }
   }
 </script>

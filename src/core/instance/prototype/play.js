@@ -1,16 +1,15 @@
 import { soundPlayEnded } from './util'
-import { isNumber } from '../../../util'
+import { isNumber, isAudioBuffer } from '../../../util'
 
 /**
- * this method allow forward or back toogle the sound, but if the sound is pause state
+ * this method allow forward or back toggle the sound, but if the sound is pause state
  * we can't call this method.
  * every times start, we need connect audio nodes, then repeat use audioBuffer, set
  * sound end event.
  * */
 export function start (time, duration) {
   if (this.getState() === 'suspended') {
-    console.warn('Current audioContext state is "suspended", you should to call "play" method.')
-    return this.play()
+    throw new Error('Current audioContext state is "suspended", you should to call "play" method.')
   }
 
   const { options, container, controlHelp } = this
@@ -43,8 +42,8 @@ export function start (time, duration) {
   
   this.setVolume()
   this.setFilterStyle(filterStyleName)
-  this.$callHooks('start')
   this.canCallStart = false
+  this.$callHooks('start')
 }
 
 // if the sound state is pause, nothing to do
@@ -78,10 +77,15 @@ export function play () {
 
     return new Promise(resolve => {
       if (!container.audioBuffer) {
-        tool.decode(options.source).then(audioBuffer => {
-          container.audioBuffer = audioBuffer
-          callPlay(resolve)
-        })
+        const buffer = options.source
+        if (isAudioBuffer(buffer)) {
+          container.audioBuffer = buffer
+        } else {
+          tool.decode(buffer).then(audioBuffer => {
+            container.audioBuffer = audioBuffer
+            callPlay(resolve)
+          })
+        }
       } else {
         callPlay(resolve)
       }
