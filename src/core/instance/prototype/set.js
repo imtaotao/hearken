@@ -1,5 +1,5 @@
 import { COMPLETE } from '../../helper/filter-options'
-import { random, isArrayBuffer } from '../../../util'
+import { random, isNumber, isArrayBuffer } from '../../../util'
 import { filterAssignment, getDefualtFilterArgs } from './util'
 
 // set sound volume
@@ -10,8 +10,9 @@ export function setVolume (precent) {
   
   if (this.container.gainNode) {
     this.container.gainNode.gain.value = volume * volume
+    this.options.volume = volume
   } else {
-    throw new Error('audioContext gainNode is null')
+    throw new Error('audioContext gainNode is null, you can\'t set volume.')
   }
 }
 

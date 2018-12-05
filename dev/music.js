@@ -6,7 +6,7 @@ export default function dealWithMusic (arrayBuffer) {
     volume: 0.5,
     hertz: 'default',
     filter: 'default',
-    loop: false,
+    loop: true,
   })
 
   window.h = hearken

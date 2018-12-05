@@ -19,7 +19,7 @@
       super()
       this.Hearken = null
       setTimeout(() => {
-        document.getElementsByTagName('audio')[0].play()
+        // document.getElementsByTagName('audio')[0].play()
       }, 3000)
     }
 
