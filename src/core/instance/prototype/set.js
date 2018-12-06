@@ -9,8 +9,8 @@ export function setVolume (precent) {
     : this.options.volume
   
   if (this.container.gainNode) {
-    this.container.gainNode.gain.value = volume * volume
     this.options.volume = volume
+    this.container.gainNode.gain.value = volume * volume
   } else {
     throw new Error('audioContext gainNode is null, you can\'t set volume.')
   }

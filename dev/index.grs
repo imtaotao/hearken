@@ -6,21 +6,19 @@
     <button @click="this.start.bind(this)">开始</button>
     <button @click="this.stop.bind(this)">停止</button>
     <button @click="this.getMusic.bind(this)">getMusic</button>
-    <audio src="http://localhost:3000/getParticalMusic?name=永夜.mp3"></audio>
+    <!-- <audio src="http://localhost:3000/getParticalMusic?name=永夜.mp3"></audio> -->
   </div>
 </template>
 
 <script>
   import Grass from '@rustle/grass'
-  import dealWithMusic from './music'
+  import dealWithMusic, { testAjax } from './music'
 
   export default class Root extends Grass.Component {
     constructor () {
       super()
+      testAjax()
       this.Hearken = null
-      setTimeout(() => {
-        // document.getElementsByTagName('audio')[0].play()
-      }, 3000)
     }
 
     play () {
@@ -48,9 +46,8 @@
     }
 
     getMusic () {
-      this.ajax(musicName.value, result => {
+      this.ajax(musicName.value, (result, xhr) => {
         const data = result.response
-
         if (!this.Hearken) {
           this.Hearken = dealWithMusic(data)
         } else {
@@ -67,7 +64,7 @@
     ajax (name, cb) {
       const xhr = new XMLHttpRequest()
       xhr.open('GET', 'http://localhost:3000/getMusic?name=' + name)
-      xhr.onload = e => cb(e.target)
+      xhr.onload = e => cb(e.target, xhr)
       xhr.withCredentials = true
       xhr.responseType = 'arraybuffer'
       xhr.send()

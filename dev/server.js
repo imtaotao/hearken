@@ -27,19 +27,19 @@ http.createServer(serverBody).listen(port, () => {
 })
 
 function serverBody (req, res) {
+  cors(req, res)
+
   // get complete music source
-  get(req, '/getMusic', data => {
+  get(req, res, '/getMusic', data => {
     if (typeof data.name === 'string') {
-      cors(req, res)
-      sendCompleteMusic(res, data.name.trim())
+      sendCompleteSource(res, data.name.trim())
     }
   })
 
   // partical music source
-  get(req, '/getParticalMusic', data => {
+  get(req, res, '/getParticalMusic', data => {
     if (typeof data.name === 'string') {
-      cors(req, res)
-      sendParticalMusicSource(req, res, data.name.trim())
+      sendParticalSource(req, res, data.name.trim())
     }
   })
 }
@@ -49,17 +49,36 @@ function notFound (res) {
   res.end("<h1>Not found.</h1>")
 }
 
-function get (req, path, cb) {
-  const { url:reqUrl, method } = req
+let called = false
 
-  if (method.toLocaleLowerCase() === 'get') {
+function sendOnce (res, code, content, headers) {
+  setTimeout(() => {
+    if (called) return
+
+    res.writeHead(code, headers)
+    res.end(content)
+
+    called = true
+    setTimeout(() => called = false)
+  })
+}
+
+function get (req, res, path, cb) {
+  let { url:reqUrl, method } = req
+  method = method.toLocaleLowerCase()
+
+  if (method === 'get') {
     const { query, pathname } = url.parse(reqUrl, true)
     if (pathname === path) {
       typeof cb === 'function' && cb(query)
     }
+  } else if (method === 'options') {
+    // not content
+    // because it's cors, don't need "Allow" header
+    sendOnce(res, 204)
   } else {
-    res.writeHead(405, {'Allow': 'GET'})
-    res.end('<h1>Method Not Allowed.</h1>')
+    // this is just a test server, so we ignored the "HEAD" method
+    sendOnce(res, 405, '<h1>Method Not Allowed.</h1>', {'Allow': 'GET, OPTIONS'})
   }
 }
 
@@ -93,7 +112,7 @@ function getFileNameAndType (name) {
 }
 
 // get complete music source
-function sendCompleteMusic (res, name) {
+function sendCompleteSource (res, name) {
   const { type, fileName } = getFileNameAndType(name)
   const sourcePath = path.resolve(basePath, fileName)
 
@@ -108,16 +127,16 @@ function sendCompleteMusic (res, name) {
 }
 
 // allow pass 206 transfer data
-function sendParticalMusicSource (req, res, name) {
+function sendParticalSource (req, res, name) {
   const { type, fileName } = getFileNameAndType(name)
   const sourcePath = path.resolve(basePath, fileName)
 
   if (fs.existsSync(sourcePath)) {
     // we need partical source range, if not, we will return complete file
-    const range = req.headers['range']
+    const range = req.headers['range'] || req.headers['Range']
     range != null
       ? sendSourceContent(res, range, type, sourcePath)
-      : sendCompleteMusic(res, name)
+      : sendCompleteSource(res, name)
   } else {
     notFound(res)
   }
@@ -158,7 +177,7 @@ function sendSourceContent (res, range, type, sourcePath) {
     // if range is normal, return the corresponding resource
     if (itsWithInRange(start, end, size)) {
       setParticalHeader(res, start, end, size, type)
-      
+
       const readStream = fs.createReadStream(sourcePath, {start, end})
       readStream.on('open', () => readStream.pipe(res))
     } else {
@@ -176,6 +195,6 @@ function setParticalHeader (res, start, end, total, type) {
     'Cache-Control': 'Accept-Ranges',
     'Content-Type': mimeNames[type],
     'Content-Range': `bytes ${start}-${end}/${total}`,
-    'Content-Length': start == end ? 0 : (end - start + 1),
+    'Content-Length': start == end ? 0 : (end - start),
   })
 }
