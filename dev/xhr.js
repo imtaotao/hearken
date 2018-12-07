@@ -1,19 +1,18 @@
-const PARTICAL = 1024 * 1024
 const EMPTY = () => {}
 
 ajax._time = 500
 ajax._repeatConnect = 10
+ajax._partical = 1024 * 1024
+
 
 export default function ajax (url, cb, auto, data) {
   // record success times and repeat connect times
-  if (!data) {
-    data = {
-      total: null,
-      errorIndex: 0,
-      transmitted: 0,
-      successIndex: 0,
-      transferCompleted: false,
-    }
+  data = data || {
+    total: null,
+    errorIndex: 0,
+    transmitted: 0,
+    successIndex: 0,
+    transferCompleted: false,
   }
   
   data.successIndex === 0
@@ -132,7 +131,7 @@ function getSourcePosition ({ successIndex, transmitted, total }) {
   } else {
     // there should be a resource size
     if (!total) return null
-    const result = start + PARTICAL
+    const result = start + ajax._partical
 
     end = result > total
       ? total

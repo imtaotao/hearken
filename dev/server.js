@@ -211,14 +211,12 @@ function setParticalHeader (res, start, end, total, type) {
 
 // set cors
 function cors (req, res) {
-  const origin = req.headers.origin || req.headers.Origin
+  const origin = req.headers.origin || req.headers.Origin || '*'
 
-  if (origin) {
-    res.setHeader('Access-Control-Allow-Credentials', true)
-    res.setHeader('Access-Control-Allow-Origin', origin)
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,Range')
-    res.setHeader('Access-Control-Allow-Methods', 'PUT,POST,HEAD,GET,DELETE,OPTIONS')
-    res.setHeader('Access-Control-Expose-Headers', 'Content-Range,Content-Length')
-    res.setHeader('Content-Type', 'application/json;charset=utf-8')
-  }
+  res.setHeader('Access-Control-Allow-Credentials', true)
+  res.setHeader('Access-Control-Allow-Origin', origin)
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,Range')
+  res.setHeader('Access-Control-Allow-Methods', 'HEAD,GET,OPTIONS')
+  res.setHeader('Access-Control-Expose-Headers', 'Content-Range,Content-Length')
+  res.setHeader('Content-Type', 'application/json;charset=utf-8')
 }
