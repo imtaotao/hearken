@@ -49,20 +49,6 @@ function notFound (res) {
   res.end("<h1>Not found.</h1>")
 }
 
-let called = false
-
-function sendOnce (res, code, content, headers) {
-  setTimeout(() => {
-    if (called) return
-
-    res.writeHead(code, headers)
-    res.end(content)
-
-    called = true
-    setTimeout(() => called = false)
-  })
-}
-
 function defineInterface (req, res, path, cb) {
   const { query, pathname } = url.parse(req.url, true)
   const method = req.method.toLocaleLowerCase()

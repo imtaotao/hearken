@@ -31,7 +31,7 @@ function callback (error, result, continueFun) {
   console.log(result.response);
   if (i === 0) {
     console.log(12);
-    dealWithMusic(result.response).play()
+    // dealWithMusic(result.response).play()
   }
   i++
 }
