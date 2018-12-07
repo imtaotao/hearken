@@ -16,6 +16,42 @@ export default function ajax (url, cb, auto, data) {
     }
   }
   
+  data.successIndex === 0
+    ? getSourceInfor(url, cb, auto, data)
+    : getSource(url, cb, auto, data)
+}
+
+// get source size
+function getSourceInfor (url, cb, auto, data) {
+  const xhr = new XMLHttpRequest()
+  xhr.open('HEAD', url)
+  xhr.withCredentials = true
+
+  // set callback
+  xhr.onload = e => {
+    if (xhr.status !== 200 && xhr.status !== 204) {
+      callFunc(cb, 'error', 'xhr status is not "204" or "200".')
+      return
+    }
+    // get source size
+    const total = getSourceSize(xhr)
+    if (!total) {
+      callFunc(cb, 'error', 'Can\'t get resource size.')
+      return
+    }
+    data.total = total
+
+    // continue get real source
+    setTimeout(() => {
+      data.successIndex++
+      ajax(url, cb, auto, data)
+    }, ajax._time)
+  }
+  xhr.onerror = e => errorCallback(url, e.target, data, auto, cb)
+  xhr.send()
+}
+
+function getSource (url, cb, auto, data) {
   const xhr = new XMLHttpRequest()
   xhr.open('GET', url)
   xhr.withCredentials = true
@@ -23,7 +59,6 @@ export default function ajax (url, cb, auto, data) {
 
   // set header
   const positions = getSourcePosition(data, cb)
-
   if (!positions || isNaN(positions.start) || isNaN(positions.end)) {
     callFunc(cb, 'error', 'Can\'t get resource range.')
     return
@@ -39,15 +74,13 @@ export default function ajax (url, cb, auto, data) {
     }
 
     data.transmitted = positions.end + 1
-    const header = xhr.getAllResponseHeaders()
-    sucessCallback(url, e.target, header, data, auto, cb)
+    sucessCallback(url, e.target, data, auto, cb)
   }
   xhr.onerror = e => errorCallback(url, e.target, data, auto, cb)
-
   xhr.send()
 }
 
-function sucessCallback (url, result, header, data, auto, cb) {
+function sucessCallback (url, result, data, auto, cb) {
   data.errorIndex = 0
 
   const continueGetSource = () => {
@@ -55,20 +88,12 @@ function sucessCallback (url, result, header, data, auto, cb) {
     ajax(url, cb, auto, data)
   }
 
-  
-
-  if (data.successIndex === 0) {
-    let total = Number(getSourceSize(header))
-    total = isNaN(total) ? null : total
-
-    if (!total) {
-      callFunc(cb, 'error', 'Can\'t get resource size.')
-      return
-    }
-    data.total = total
-  } else if (data.transmitted >= data.total) {
+  if (data.transmitted >= data.total) {
     data.transferCompleted = true
   }
+
+  // add index
+  data.successIndex++
   
   if (typeof cb === 'function') {
     if (data.total) {
@@ -83,7 +108,6 @@ function sucessCallback (url, result, header, data, auto, cb) {
     }
   }
 
-  data.successIndex++
   auto && setTimeout(continueGetSource, ajax._time)
 }
 
@@ -118,24 +142,14 @@ function getSourcePosition ({ successIndex, transmitted, total }) {
   return { start, end }
 }
 
-function getSourceSize (headers) {
-  if (!headers) return null
+function getSourceSize (xhr) {
+  const size = xhr.getResponseHeader('Content-Length')
+  if (!size) return null
 
-  headers = headers.split('\n')
-  
-  for (let i = 0, len = headers.length; i < len; i++) {
-    const header = headers[i]
-
-    if (header) {
-      let [key, value] = header.split(':')
-      if (key = key.trim()) {
-        if (key.toLocaleLowerCase() === 'content-range') {
-          // get total size
-          return value.split('/')[1]
-        }
-      }
-    }
-  }
+  const total = Number(size.trim())
+  return isNaN(total)
+    ? null
+    : total
 }
 
 function setHeader (xhr, start, end) {

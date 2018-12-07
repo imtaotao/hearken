@@ -30,14 +30,14 @@ function serverBody (req, res) {
   cors(req, res)
 
   // get complete music source
-  get(req, res, '/getMusic', data => {
+  defineInterface(req, res, '/getMusic', data => {
     if (typeof data.name === 'string') {
       sendCompleteSource(res, data.name.trim())
     }
   })
 
   // partical music source
-  get(req, res, '/getParticalMusic', data => {
+  defineInterface(req, res, '/getParticalMusic', data => {
     if (typeof data.name === 'string') {
       sendParticalSource(req, res, data.name.trim())
     }
@@ -63,36 +63,28 @@ function sendOnce (res, code, content, headers) {
   })
 }
 
-function get (req, res, path, cb) {
-  let { url:reqUrl, method } = req
-  method = method.toLocaleLowerCase()
+function defineInterface (req, res, path, cb) {
+  const { query, pathname } = url.parse(req.url, true)
+  const method = req.method.toLocaleLowerCase()
+  const isLegal = expectMethod => {
+    return pathname === path && expectMethod === method
+  }
+  
+  if (isLegal('get')) {
+    typeof cb === 'function' && cb(query)
 
-  if (method === 'get') {
-    const { query, pathname } = url.parse(reqUrl, true)
-    if (pathname === path) {
-      typeof cb === 'function' && cb(query)
-    }
-  } else if (method === 'options') {
+  } else if (isLegal('head')) {
+    sendHeadRequest(res, query.name.trim())
+
+  } else if (isLegal('options')) {
     // not content
     // because it's cors, don't need "Allow" header
-    sendOnce(res, 204)
-  } else {
-    // this is just a test server, so we ignored the "HEAD" method
-    sendOnce(res, 405, '<h1>Method Not Allowed.</h1>', {'Allow': 'GET, OPTIONS'})
-  }
-}
+    res.writeHead(204)
+    res.end()
 
-// set cors
-function cors (req, res) {
-  const origin = req.headers.origin || req.headers.Origin
-
-  if (origin) {
-    res.setHeader('Access-Control-Allow-Credentials', true)
-    res.setHeader('Access-Control-Allow-Origin', origin)
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,Range')
-    res.setHeader('Access-Control-Allow-Methods', 'PUT,POST,GET,DELETE,OPTIONS')
-    res.setHeader('Access-Control-Expose-Headers', 'content-range')
-    res.setHeader('Content-Type', 'application/json;charset=utf-8')
+  } else if (pathname === path) {
+    res.writeHead(405, {'Allow': 'GET, HEAD, OPTIONS'})
+    res.end('<h1>Method Not Allowed.</h1>')
   }
 }
 
@@ -108,6 +100,34 @@ function getFileNameAndType (name) {
   return {
     type: '.mp3',
     fileName: name + '.mp3',
+  }
+}
+
+function sendHeadRequest (res, name) {
+  if (!name) {
+    notFound(res)
+    return
+  }
+
+  const { type, fileName } = getFileNameAndType(name)
+  const sourcePath = path.resolve(basePath, fileName)
+
+  if (fs.existsSync(sourcePath)) {
+    fs.stat(sourcePath, (error, stat) => {
+      if (error) {
+        res.writeHead(500)
+        res.end('<h1>Internal Server Error.</h1>')
+        return
+      }
+
+      res.writeHead(200, {
+        'Content-Length': stat.size,
+        'Content-Type': mimeNames[type],
+      })
+      res.end()
+    })
+  } else {
+    notFound(res)
   }
 }
 
@@ -160,8 +180,12 @@ function sendSourceContent (res, range, type, sourcePath) {
   }
 
   const itsWithInRange = (start, end, total) => {
-    if ((start < 0 || start > total) ||
-        (end < 0 || end > total)) return false
+    if (
+        (start < 0 || start > total) ||
+        (end < 0 || end > total) ||
+        (start > end)
+    ) return false
+
     return true
   }
 
@@ -197,4 +221,18 @@ function setParticalHeader (res, start, end, total, type) {
     'Content-Range': `bytes ${start}-${end}/${total}`,
     'Content-Length': start == end ? 0 : (end - start),
   })
+}
+
+// set cors
+function cors (req, res) {
+  const origin = req.headers.origin || req.headers.Origin
+
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Credentials', true)
+    res.setHeader('Access-Control-Allow-Origin', origin)
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,Range')
+    res.setHeader('Access-Control-Allow-Methods', 'PUT,POST,HEAD,GET,DELETE,OPTIONS')
+    res.setHeader('Access-Control-Expose-Headers', 'Content-Range,Content-Length')
+    res.setHeader('Content-Type', 'application/json;charset=utf-8')
+  }
 }

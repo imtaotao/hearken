@@ -18,14 +18,20 @@ export default function dealWithMusic (arrayBuffer) {
 }
 
 export function testAjax () {
-  ajax('http://localhost:3000/getParticalMusic?name=永夜', callback, true)
+  ajax('http://localhost:3000/getParticalMusic?name=永夜', callback, false)
 }
-
+let i = 0
 function callback (error, result, continueFun) {
   if (error) {
     console.error(error)
     return
   }
-
-  console.log(result);
+  
+  continueFun()
+  console.log(result.response);
+  if (i === 0) {
+    console.log(12);
+    dealWithMusic(result.response).play()
+  }
+  i++
 }
