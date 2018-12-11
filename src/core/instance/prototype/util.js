@@ -6,12 +6,6 @@ export function soundPlayEnded (Hearken, event) {
   Hearken.$callHooks('playEnd', event)
 }
 
-export function callHooks (name, ...target) {
-  if (typeof this.hooks[name] === 'function') {
-    this.hooks[name].apply(this, target)
-  }
-}
-
 export function getDefualtFilterArgs (styleName) {
   switch (styleName) {
     case 'init' :

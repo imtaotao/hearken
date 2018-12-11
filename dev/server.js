@@ -20,6 +20,7 @@ const mimeNames = {
   '.txt': 'text/plain',
   '.wav': 'audio/x-wav',
   '.webm': 'video/webm',
+  '.html': 'text/html',
 }
 
 http.createServer(serverBody).listen(port, () => {
@@ -121,12 +122,23 @@ function sendHeadRequest (res, name) {
 function sendCompleteSource (res, name) {
   const { type, fileName } = getFileNameAndType(name)
   const sourcePath = path.resolve(basePath, fileName)
-
+  
   if (fs.existsSync(sourcePath)) {
-    // create reade stream
-    const readStream = fs.createReadStream(sourcePath)
-    res.writeHead(200, {'Content-type': mimeNames[type]})
-    readStream.on('open', () => readStream.pipe(res))
+    fs.stat(sourcePath, (error, stat) => {
+      if (error) {
+        res.writeHead(500)
+        res.end('<h1>Internal Server Error.</h1>')
+        return
+      }
+
+      // create reade stream
+      const readStream = fs.createReadStream(sourcePath)
+      res.writeHead(200, {
+        'Content-Length': stat.size,
+        'Content-Type': mimeNames[type],
+      })
+      readStream.on('open', () => readStream.pipe(res))
+    })
   } else {
     notFound(res)
   }

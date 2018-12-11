@@ -1,4 +1,4 @@
-import Hearken from '../src'
+import Hearken from '../refactor'
 import ajax from './xhr'
 
 export default function dealWithMusic (arrayBuffer) {
@@ -11,9 +11,6 @@ export default function dealWithMusic (arrayBuffer) {
   })
 
   window.h = hearken
-  hearken.hooks.playEnd = function (e) {
-    console.log(e);
-  }
   return hearken
 }
 

@@ -22,6 +22,5 @@ export default function createExportApi (HearkenProto) {
 
   // util functions
   HearkenProto.destroy = destroyInstance
-  HearkenProto.$callHooks = callHooks
   HearkenProto.appendBuffer = appendBuffer
 }

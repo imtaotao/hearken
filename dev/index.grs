@@ -17,7 +17,7 @@
   export default class Root extends Grass.Component {
     constructor () {
       super()
-      testAjax()
+      // testAjax()
       this.Hearken = null
     }
 

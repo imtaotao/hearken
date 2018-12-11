@@ -11,10 +11,10 @@ export default function Hearken (options = {}) {
   if (this.options.mode === COMPLETE) {
     this.container.bufferQueue = [options.source]
   }
-  
+
   // inject Hearken to every widget
   this.tool.Hearken = this
-  this.hooks.Hearken = this
+  this.life.Hearken = this
   this.container.Hearken = this
   this.controlHelp.Hearken = this
 
