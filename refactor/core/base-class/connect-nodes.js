@@ -14,7 +14,7 @@ export default function connect (Hearken, nodeNames) {
       let preNode = nodes[nodeNames[i - 1]]
 
       if (name === 'source') {
-        name = Hearken.$isComplete
+        name = Hearken.$isComplete()
           ? 'bufferSource'
           : 'mediaSource'
         

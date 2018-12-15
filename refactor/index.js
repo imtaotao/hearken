@@ -1,9 +1,10 @@
 import Base from './core/base-class'
+import _MediaStream from './core/media-stream'
 import BufferSource from './core/buffer-source'
 import ElementSource from './core/element-source'
 import createConstructorApi from './helper/setAttribute'
 import { filterOptions } from './core/share'
-import { isNumber, random } from './util'
+import { random, isNumber, isArrayBuffer } from './util'
 
 export default class Hearken extends Base {
   constructor (options) {
@@ -15,6 +16,7 @@ export default class Hearken extends Base {
     this.life = Object.create(null)
     this.$audioCtx = Hearken.AudioContext
     this.$options = filterOptions(options)
+    this.$MediaStream = new _MediaStream(this)
     this.$BufferSource = new BufferSource(this)
     this.$ElementSource = new ElementSource(this)
   }
@@ -95,6 +97,12 @@ export default class Hearken extends Base {
     return this.$isComplete()
       ? this.$BufferSource.pause()
       : this.$ElementSource.pause()
+  }
+
+  appendBuffer (buffer) {
+    if (isArrayBuffer(buffer)) {
+      this.$MediaStream.appendBuffer(buffer)
+    }
   }
 
   toggleSound () {

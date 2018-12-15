@@ -1,3 +1,5 @@
+const mediaElementNodes = new WeakMap()
+
 export default function createNodes (Hearken, needMedia, audioElment) {
   const nodes = Object.create(null)
 
@@ -6,7 +8,7 @@ export default function createNodes (Hearken, needMedia, audioElment) {
   nodes.convolver = Hearken.$audioCtx.createConvolver()
 
   if (needMedia) { 
-    nodes.mediaSource = Hearken.$audioCtx.createMediaElementSource(audioElment)
+    nodes.mediaSource = saveMediaSource(Hearken.$audioCtx, audioElment)
   } else {
     nodes.bufferSource = Hearken.$audioCtx.createBufferSource()
   }
@@ -41,4 +43,14 @@ function createGainNode (Hearken) {
       ? 'createGain'
       : 'createGainNode'
   ]()
+}
+
+function saveMediaSource (audioCtx, audio) {
+  if (mediaElementNodes.has(audio)) {
+    return mediaElementNodes.get(audio)
+  } else {
+    const source = audioCtx.createMediaElementSource(audio)
+    mediaElementNodes.set(audio, source)
+    return source
+  }
 }

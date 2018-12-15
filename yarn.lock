@@ -3024,6 +3024,10 @@ opn@^5.1.0:
   dependencies:
     is-wsl "^1.1.0"
 
+opus-to-pcm@^1.0.2:
+  version "1.0.2"
+  resolved "http://registry.npm.taobao.org/opus-to-pcm/download/opus-to-pcm-1.0.2.tgz#c553c3fed619c8a474896c131a6b6dc9f749dc58"
+
 original@^1.0.0:
   version "1.0.2"
   resolved "http://registry.npm.taobao.org/original/download/original-1.0.2.tgz#e442a61cffe1c5fd20a65f3261c26663b303f25f"

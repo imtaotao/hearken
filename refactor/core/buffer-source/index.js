@@ -20,10 +20,10 @@ export default class BufferSource {
       const source= Hearken.$options.source
       Hearken.$audioCtx.decodeAudioData(source, audioBuffer => {
         Hearken.$Container.audioBuffer = audioBuffer
-        startCore(Hearken, time, duration)
+        startCore(this, time, duration)
       })
     } else {
-      startCore(Hearken, time, duration)
+      startCore(this, time, duration)
     }
   }
 

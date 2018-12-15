@@ -5,31 +5,38 @@ export default class ElementSource {
   constructor (Hearken) {
     this.Hearken = Hearken
     this.state = 'pause'
-    this.mediaSource = null
-    this.sourceBuffer = null
-    // this.audioElement = document.createElement('audio')
+    this.mediaStream = null
     this.audioElement = document.querySelector('audio')
   }
 
   start (time, duration) {
     const { Hearken, audioElement } = this
-    // we need avoid conflict
-    if (this.mediaSource) {
-      this.stop()
-    }
+    const $MediaStream = Hearken.$MediaStream
 
-    time = isNumber(time) ? time : null
-    duration = isNumber(duration) ? duration : null
-
-    Hearken.$resetContainer(audioElement)
-
-    if (Hearken.$getState() === 'suspended') {
-      Hearken.$audioCtx.resume().then(() => {
+    // playing
+    const startFunBody = () => {
+      time = isNumber(time) ? time : null
+      duration = isNumber(duration) ? duration : null
+      Hearken.$resetContainer(audioElement)
+    
+      if (Hearken.$getState() === 'suspended') {
+        Hearken.$audioCtx.resume().then(() => startCore(this, time, duration))
+      } else {
         startCore(this, time, duration)
-      })
-    } else {
-      startCore(this, time, duration)
+      }
     }
+
+    // connect mediasource
+    if (!this.mediaStream) {
+      $MediaStream.connect(audioElement).then(() => {
+        this.mediaStream = $MediaStream.mediaSource
+        startFunBody()
+      })
+      return
+    }
+    // we need avoid conflict
+    this.stop()
+    startFunBody()
   }
 
   stop () {
@@ -38,16 +45,15 @@ export default class ElementSource {
       this.state = 'pause'
     }
     this.audioElement.src = ''
-    this.mediaSource = null
-    this.sourceBuffer = null
-    this.Hearken.$callHook('stop')
+    this.mediaStream = null
+    this.Hearken.$callHooks('stop')
   }
 
   play () {
     if (this.state === 'pause') {
       return this.audioElement.play().then(() => {
         this.state = 'playing'
-        this.Hearken.$callHook('play')
+        this.Hearken.$callHooks('play')
       })
     } else {
       return Promise.resolve(false)
@@ -59,7 +65,7 @@ export default class ElementSource {
       if (this.state === 'playing') {
         this.audioElement.pause()
         this.state = 'pause'
-        this.Hearken.$callHook('pause')
+        this.Hearken.$callHooks('pause')
         resolve()
       } else {
         resolve(false)

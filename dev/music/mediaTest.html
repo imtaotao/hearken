@@ -4,10 +4,12 @@
     <meta charset="utf-8"/>
   </head>
   <body>
-    <audio controls></audio>
+    <button onclick=play()>dian</button>
     <script>
-      var video = document.querySelector('audio');
-      var assetURL = 'http://localhost:3000/getParticalMusic?name=毒苹果.mp3';
+      var video = new Audio()
+      video.muted = true
+      var assetURL = 'http://127.0.0.1:3000/getParticalMusic?name=毒苹果.mp3';
+      // var assetURL = 'http://fs.w.kugou.com/201812121012/5e8f07a7f35408d760ea94141c8acfcc/G113/M00/04/17/UZQEAFwKZuuAOSjeADQm1JJ-bCE854.mp3'
       // Need to be specific for Blink regarding codecs
       // ./mp4info frag_bunny.mp4 | grep Codec
       var mimeCodec = 'audio/mpeg';
@@ -20,15 +22,19 @@
         console.error('Unsupported MIME type or codec: ', mimeCodec);
       }
       function sourceOpen (_) {
-        console.log(121);
         //console.log(this.readyState); // open
         var mediaSource = this;
         var sourceBuffer = mediaSource.addSourceBuffer(mimeCodec);
         fetchAB(assetURL, function (buf) {
           console.log(buf);
           sourceBuffer.addEventListener('updateend', function (_) {
-            // mediaSource.endOfStream();
-            video.play();
+            mediaSource.endOfStream();
+           
+            setTimeout(() => {
+              video.play()
+              video.muted = false
+            })
+            
             //console.log(mediaSource.readyState); // ended
           });
           sourceBuffer.appendBuffer(buf);
@@ -44,6 +50,23 @@
         };
         xhr.send();
       };
+
+      function play() {
+        console.log(12);
+        video.play()
+      }
+
+      function trg (audio) {
+        let node = document.createElement('button')
+        node.addEventListener('click', e => {
+          console.log(121);
+          audio.play()
+        })
+        
+        setTimeout(() => {
+          node.dispatchEvent(new Event('click'))
+        }, 1000)
+      }
     </script>
   </body>
 </html>
