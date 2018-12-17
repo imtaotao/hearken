@@ -1,11 +1,12 @@
 import { isUndef, getLegalDuration } from '../share'
 
 export function startCoreFn (Instance, time, duration) {
-  const { nodes, audioBuffer, Hearken } = Instance
-  const bufferSource = nodes.bufferSource
-  const loop = Hearken.options.loop
+  const { nodes, options, audioBuffer } = Instance
   const id = Instance.id
-
+  const loop = options.loop
+  const bufferSource = nodes.bufferSource
+  const connectOrder = ['panner', 'delay', 'gainNode', 'analyser', 'passFilterNode', 'filterNode', 'bufferSource']
+  
   if (bufferSource.buffer) {
     console.warn('bufferSource is non-null')
     return
@@ -19,7 +20,7 @@ export function startCoreFn (Instance, time, duration) {
       : audioBuffer.duration
   }
 
-  Instance.connectNodes(['panner', 'gainNode', 'analyser', 'bufferSource'])
+  Instance.connectNodes(connectOrder)
   bufferSource.buffer = audioBuffer
   bufferSource.loop = loop
   bufferSource.onended = e => {
@@ -37,14 +38,8 @@ export function startCoreFn (Instance, time, duration) {
     ? bufferSource.start
     : bufferSource.noteOn
 
+  // the delay time is 0, because we used delayNode
   playMusic.call(bufferSource, 0, time, duration)
-
-  // resume state
-  Instance.setVolume()
-  Instance.setMute()
-  Instance.setRate()
-  Instance.setFilterStyle()
-  // Instance.panner.resumeState()
 
   Instance.starting = true
   Instance.startTime = Date.now()
@@ -82,10 +77,12 @@ export function registerEvent (Hearken, Instance) {
       Instance.startTime = Date.now()
       Instance.playing = true
     }
+    Instance.dispatch('play')
   })
   Hearken.on('pause', () => {
     Instance.playingTime = Instance.getCurrentTime() * 1000
     Instance.startTime = 0
     Instance.playing = false
+    Instance.dispatch('pause')
   })
 }

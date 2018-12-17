@@ -1,18 +1,8 @@
-/**
- * 音频资源：source
- * 模式：mode -> partical | complete
- * 音量大小： 0 - 1
- * 是否循环： loop -> boolean
- * 傅里叶变换参数： fftSize -> number
- * 赫兹：hertz -> array
- * 均衡器： filter -> {string: number[]}
- **/
 import {
   RATE,
+  DELAY,
   VOLUME,
   FFTSIZE,
-  DEFAULTHZ,
-  DEFAULTFILTER,
 } from './default'
 
 export const isType = (v, type) => {
@@ -21,7 +11,9 @@ export const isType = (v, type) => {
 
 export const isUndef = v => v === undefined || v === null
 
-export const isNumber = v => isType(v, 'Number') && !isNaN(v)
+export const isNumber = v => typeof v === 'number' && !isNaN(v)
+
+export const isObject = v => v && typeof v === 'object'
 
 export const isArrayBuffer = v => isType(v, 'ArrayBuffer')
 
@@ -48,31 +40,32 @@ export function getLegalDuration (max, rate, duration) {
 }
 
 export function filterOptions (options) {
+  // boolean
   const loop = !!options.loop
   const mute = !!options.mute
-  const rate = options.rate  || RATE
-  const volume = options.volume || VOLUME
 
+  // number
+  const delay = isNumber(options.delay)
+    ? options.delay
+    : DELAY
+  const rate = isNumber(options.rate)
+    ? options.rate 
+    : RATE
+  const volume = isNumber(options.volume)
+    ? options.volume
+    : VOLUME
+  let fftSize = isNumber(options.fftSize)
+    ? options.fftSize
+    : FFTSIZE
+
+  fftSize < 16
+    ? FFTSIZE
+    : fftSize
+
+  // string
   const mime = typeof options.mime === 'string'
     ? options.mime
     : null
 
-  const hertz = Array.isArray(options.hertz)
-    ? options.hertz
-    : options.hertz === 'default'
-      ? DEFAULTHZ
-      : null
-  
-  const filter = Array.isArray(options.filter)
-    ? options.filter
-    : options.filter === 'default'
-      ? DEFAULTFILTER
-      : null
-
-  let fftSize = options.fftSize || FFTSIZE
-  fftSize > 16
-    ? FFTSIZE
-    : fftSize
-
-  return { mute, rate, mime, loop, hertz, volume, filter, fftSize }
+  return { mute, rate, mime, delay, loop, volume, fftSize }
 }

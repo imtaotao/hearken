@@ -1,6 +1,6 @@
 import { isNumber } from '../share'
 
-function pannerNode (Instance, cb) {
+function getPannerNode (Instance, cb) {
   const nodes = Instance.Sound.nodes
   if (nodes && nodes.panner) {
     cb(nodes.panner, Instance.AudioCtx)
@@ -17,6 +17,7 @@ export default class Panner {
   constructor (SoundInstance, AudioCtx) {
     this.Sound = SoundInstance
     this.AudioCtx = AudioCtx
+    // default args
     this.pannerPosition = {
       x: 0,
       y: 0,
@@ -37,8 +38,8 @@ export default class Panner {
       fy: 0,
       fz: -1,
       ux: 0,
-      uy: 0,
-      uz: 1,
+      uy: 1,
+      uz: 0,
     }
     this.coneAngle = {
       inner: 360,
@@ -53,13 +54,13 @@ export default class Panner {
   }
 
   setPosition (x, y, z) {
-    pannerNode(this, (panner, AudioCtx) => {
-      const defaultArgs = this.pannerPosition
+    const defaultArgs = this.pannerPosition
 
-      x = dealWithArg(x, defaultArgs, 'x')
-      y = dealWithArg(y, defaultArgs, 'y')
-      z = dealWithArg(z, defaultArgs, 'z')
+    x = dealWithArg(x, defaultArgs, 'x')
+    y = dealWithArg(y, defaultArgs, 'y')
+    z = dealWithArg(z, defaultArgs, 'z')
 
+    getPannerNode(this, (panner, AudioCtx) => {
       if (panner.positionX) {
         panner.positionX.setValueAtTime(x, AudioCtx.currentTime)
         panner.positionY.setValueAtTime(y, AudioCtx.currentTime)
@@ -71,13 +72,13 @@ export default class Panner {
   }
 
   setOrientation (x, y, z) {
-    pannerNode(this, (panner, AudioCtx) => {
-      const defaultArgs = this.pannerOrientation
+    const defaultArgs = this.pannerOrientation
 
-      x = dealWithArg(x, defaultArgs, 'x')
-      y = dealWithArg(y, defaultArgs, 'y')
-      z = dealWithArg(z, defaultArgs, 'z')
+    x = dealWithArg(x, defaultArgs, 'x')
+    y = dealWithArg(y, defaultArgs, 'y')
+    z = dealWithArg(z, defaultArgs, 'z')
 
+    getPannerNode(this, (panner, AudioCtx) => {
       if (panner.orientationX) {
         panner.orientationX.setValueAtTime(x, AudioCtx.currentTime)
         panner.orientationY.setValueAtTime(y, AudioCtx.currentTime)
@@ -85,6 +86,18 @@ export default class Panner {
       } else {
         panner.setOrientation(x, y, z)
       }
+    })
+  }
+
+  setConeAngle (inner, outer) {
+    const defaultArgs = this.coneAngle
+
+    inner = dealWithArg(inner, defaultArgs, 'inner')
+    outer = dealWithArg(inner, defaultArgs, 'outer')
+
+    getPannerNode(this, pannerNode => {
+      pannerNode.coneInnerAngle = inner
+      pannerNode.coneOuterAngle = outer
     })
   }
 
@@ -96,9 +109,9 @@ export default class Panner {
     fx = dealWithArg(fx, defaultArgs, 'fx')
     fy = dealWithArg(fy, defaultArgs, 'fy')
     fz = dealWithArg(fz, defaultArgs, 'fz')
-    ux = dealWithArg(fx, defaultArgs, 'ux')
-    uy = dealWithArg(fy, defaultArgs, 'uy')
-    uz = dealWithArg(fz, defaultArgs, 'uz')
+    ux = dealWithArg(ux, defaultArgs, 'ux')
+    uy = dealWithArg(uy, defaultArgs, 'uy')
+    uz = dealWithArg(uz, defaultArgs, 'uz')
 
     if(listener.forwardX) {
       listener.forwardX.setValueAtTime(fx, AudioCtx.currentTime)
@@ -130,18 +143,6 @@ export default class Panner {
     }
   }
 
-  setConeAngle (inner, outer) {
-    pannerNode(this, pannerNode => {
-      const defaultArgs = this.coneAngle
-
-      inner = dealWithArg(inner, defaultArgs, 'inner')
-      outer = dealWithArg(inner, defaultArgs, 'outer')
-
-      pannerNode.coneInnerAngle = inner
-      pannerNode.coneOuterAngle = outer
-    })
-  }
-
   resumeState () {
     this.setPosition()
     this.setConeAngle()
@@ -155,20 +156,10 @@ export default class Panner {
     this.setConeAngle(360, 0)
     this.setOrientation(0, 0, 0)
     this.setListenerPosition(0, 0, 0)
-    this.setListenerOrientation(0, 0, 0, 0, 0, 0)
+    this.setListenerOrientation(0, 0, -1, 0, 1, 0)
   }
 
   setChannel (val) {
     isNumber(val) && this.setPosition(val)
-  }
-
-  fadeSetChannel (time, val) {
-    return new Promise(resolve => {
-      if (isNumber(time) && isNumber(val)) {
-    
-      } else {
-        resolve(false)
-      }
-    })
   }
 }

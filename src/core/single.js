@@ -46,8 +46,8 @@ export default class SingleHearken extends BaseUtil {
       this.callStop = false
 
       if (this.audioBuffer) {
-        startCoreFn(this, time, duration)
         this.id = random()
+        startCoreFn(this, time, duration)
         resolve()
         return
       }  
@@ -55,8 +55,8 @@ export default class SingleHearken extends BaseUtil {
       AudioCtx.decodeAudioData(buffer, audioBuffer => {
         this.buffer = null
         this.audioBuffer = audioBuffer
-        startCoreFn(this, time, duration)
         this.id = random()
+        startCoreFn(this, time, duration)
         resolve()
       })
     })
@@ -80,19 +80,29 @@ export default class SingleHearken extends BaseUtil {
     }
   }
 
-  getDuration () {
-    const { duration, audioBuffer } = this
-    return duration
+  // if need fixDelay
+  getDuration (fixDelay) {
+    const { duration, options, audioBuffer } = this
+    const durationTime = duration
       ? duration
       : audioBuffer
         ? audioBuffer.duration
         : null
+    return fixDelay
+      ? durationTime - options.delay
+      : durationTime
   }
 
-  getCurrentTime () {
-    const { startTime, playingTime } = this
-    const timeChunk = startTime ? Date.now() - startTime : 0
-    return (playingTime + timeChunk) / 1000
+  getCurrentTime (fixDelay) {
+    const { startTime, options, playingTime } = this
+    const timeChunk = startTime
+      ? Date.now() - startTime 
+      : 0
+    const currentTime = (playingTime + timeChunk) / 1000
+
+    return fixDelay
+      ? currentTime - options.delay
+      : currentTime
   }
 
   isPlaying () {
@@ -136,7 +146,7 @@ export default class SingleHearken extends BaseUtil {
     const gainNode = nodes && nodes.gainNode
     const mute = isUndef(isMute)
       ? options.mute
-      : isMute
+      : !!isMute
 
     options.mute = mute
 

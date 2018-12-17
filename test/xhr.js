@@ -91,6 +91,10 @@ function sucessCallback (url, result, data, auto, cb) {
     data.transferCompleted = true
   }
 
+  // start callback
+  if (data.successIndex === 0 && typeof ajax.start === 'function') {
+    ajax.start(result)
+  }
   // add index
   data.successIndex++
   
@@ -107,6 +111,10 @@ function sucessCallback (url, result, data, auto, cb) {
     }
   }
 
+  // transfer resouce end callback
+  if (data.transferCompleted && typeof ajax.end === 'function') {
+    ajax.end(result)
+  }
   auto && setTimeout(continueGetSource, ajax._time)
 }
 

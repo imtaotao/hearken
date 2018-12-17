@@ -1,5 +1,5 @@
 import Hearken from '../src'
-import ajax from './xhr'
+import ajax from '../test/xhr'
 
 let h
 
@@ -21,7 +21,7 @@ export default function Partical (props) {
       <button @click="getMusic">getMusic</button>
       <audio controls="true"></audio>
       <input type=range value='0' id="one" />
-      <input type=range value='50' id="two" @input=change />
+      <input type=range value='50' id="two" @change=change />
     </div>`
   )
 }
@@ -80,20 +80,16 @@ window.h = h = new Hearken({
   filter: 'default',
   hertz: 'default',
   mime: 'audio/mpeg',
-  volume: 2,
+  volume: 5,
 })
 
 var i = 0
 var instance
 function getMusic () {
+  const node = document.getElementById('one')
   let name = '毒苹果'
-  let id = 'one'
-  let start = 20
-  if (i % 2 === 0) {
-  //   id = 'two'
-  //   start = 20
-    name = 'airplanes'
-  }
+  if (i % 2 === 0) name = 'airplanes'
+
   const xhr = new XMLHttpRequest()
   xhr.open('GET', 'http://localhost:3000/getMusic?name=' + name)
   xhr.onload = e => {
@@ -103,17 +99,20 @@ function getMusic () {
     } else {
       instance = h.create(buffer)
     }
-    const node = document.getElementById(id)
+   
     h.ready().then(() => {
-      instance.fadeStart(3, start)
+      instance.start(10)
       window.aa = instance
-      instance.setRate(1.5)
-      toogle(instance)
+      console.log(instance.options);
+      instance.on('start', () => {
+        instance.resumeState()
+        // instance.setDelay(3)
+      })
+      // instance.setRate(1.5)
+      // toogle(instance)
       setInterval(() => {
-        const time = instance.getCurrentTime()
-        const p = time / instance.getDuration() * instance.options.rate
-        node.value = p * 100 
-        // console.log(p); 
+        const p = instance.getCurrentTime(true) / instance.getDuration(true) * instance.options.rate
+        node.value = p * 100
       }, 500)
     })
   }
