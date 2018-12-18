@@ -33,12 +33,13 @@ export function once (fn) {
   }
 }
 
-export function getLegalDuration (max, rate, duration) {
+export function getLegalDuration (max, duration) {
   if (!duration) return duration
-  duration =  Math.max(Math.min(duration, max), 0)
-  return rate
-    ? duration / rate
-    : duration
+  return Math.max(Math.min(duration, max), 0)
+}
+
+export function getRange (min, max, val) {
+  return Math.max(Math.min(val, max), min)
 }
 
 export function filterOptions (options) {

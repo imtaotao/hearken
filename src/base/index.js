@@ -17,11 +17,12 @@ export default class BaseUtil extends Event {
     this.isBufferSouceMode = this instanceof SingleHearken
   }
 
-  connectNodes (nodeNames) {
+  connectNodes () {
     if (this.nodes) {
-      connect(this.AudioCtx, this.nodes, nodeNames, this.filter.hertz, 
+      const { nodes, filter, AudioCtx, connectOrder } = this
+      connect(AudioCtx, nodes, connectOrder, filter.hertz, 
         (hz, nowFilter) => {
-          this.filter.filterNodes[hz] = nowFilter
+          filter.filterNodes[hz] = nowFilter
         })
     }
   }

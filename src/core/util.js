@@ -5,16 +5,6 @@ export function startCoreFn (Instance, time, duration) {
   const id = Instance.id
   const loop = options.loop
   const bufferSource = nodes.bufferSource
-  const connectOrder = [
-    'panner',
-    'delay',
-    'gainNode',
-    'convolver',
-    'analyser',
-    'passFilterNode',
-    'filterNode', 
-    'bufferSource',
-  ]
   
   if (bufferSource.buffer) {
     console.warn('bufferSource is non-null')
@@ -23,13 +13,15 @@ export function startCoreFn (Instance, time, duration) {
 
   // save resouce duration
   if (duration !== Instance.duration) {
-    duration = getLegalDuration(audioBuffer.duration, Instance.options.rate, duration)
-    Instance.duration = duration
-      ? duration
-      : audioBuffer.duration
+    duration = getLegalDuration(audioBuffer.duration, duration)
+    Instance.duration = isUndef(duration)
+      ? audioBuffer.duration
+      : duration
   }
 
-  Instance.connectNodes(connectOrder)
+  Instance.dispatch('startBefore')
+  Instance.connectNodes()
+
   bufferSource.buffer = audioBuffer
   bufferSource.loop = loop
   bufferSource.onended = e => {

@@ -1,6 +1,6 @@
 import BaseUtil from '../base'
 import { startCoreFn, registerEvent } from './util'
-import { random, isUndef, isNumber, isArrayBuffer, isAudioBuffer } from '../share'
+import { random, getRange, isUndef, isNumber, isArrayBuffer, isAudioBuffer } from '../share'
 
 export default class SingleHearken extends BaseUtil {
   constructor (Hearken, buffer, options) {
@@ -25,6 +25,17 @@ export default class SingleHearken extends BaseUtil {
 
     // register play and pause event
     registerEvent(Hearken, this)
+
+    this.connectOrder = [
+      'panner',
+      'delay',
+      'gainNode',
+      'convolver',
+      'analyser',
+      'passFilterNode',
+      'filterNode', 
+      'bufferSource',
+    ]
   }
 
   start (t, d, noStop) {
@@ -43,7 +54,6 @@ export default class SingleHearken extends BaseUtil {
         this.stop()
       }
 
-      this.dispatch('startBefore')
       this.resetContainer()
       this.callStop = false
 
@@ -84,31 +94,39 @@ export default class SingleHearken extends BaseUtil {
   }
 
   // if need fixDelay
-  getDuration (fixDelay) {
-    const { duration, options, audioBuffer } = this
-    const durationTime = duration
+  getDuration () {
+    const { duration, audioBuffer } = this
+    return duration
       ? duration
       : audioBuffer
         ? audioBuffer.duration
         : null
-    return fixDelay
-      ? durationTime - options.delay
-      : durationTime
   }
 
   getCurrentTime (fixDelay) {
     const { startTime, options, playingTime } = this
     const timeChunk = startTime
-      ? Date.now() - startTime 
+      ? Date.now() - startTime
       : 0
-    const currentTime = (playingTime + timeChunk) / 1000
+    let currentTime = (playingTime + timeChunk) / 1000
 
-    return fixDelay
-      ? currentTime - options.delay
+    currentTime = fixDelay
+      ? (currentTime - options.delay) * this.options.rate
       : currentTime
+
+    return currentTime
   }
 
-  isPlaying () {
+  getPercent () {
+    const duration = this.getDuration(true)
+    if (!duration) return null
+
+    const currentTime = this.getCurrentTime(true)
+    const percent = currentTime / duration
+    return getRange(0, 1, percent)
+  }
+
+  playing () {
     return this.AudioCtx.state === 'suspended'
       ? false
       : this.starting

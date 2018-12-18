@@ -69,8 +69,8 @@ function progress (instance) {
   if (time) return
   time = setInterval(() => {
     const node = document.getElementById('one')
-    const p = instance.getCurrentTime(true) / instance.getDuration(true) * instance.options.rate
-    node.value = p * 100
+    node.value = instance.getPercent() * 100
+    // console.log(instance.getPercent());
   }, 500)
 }
 
@@ -89,8 +89,8 @@ function getEffect (name) {
 window.eff = getEffect
 
 function getMusic () {
-  let name = '毒苹果'
-  if (i % 2 === 0) name = 'airplanes'
+  let name = 'airplanes'
+  if (i % 2 === 0) name = '毒苹果'
 
   get('http://localhost:3000/getMusic?name=' + name, buffer => {
     instance
@@ -100,14 +100,14 @@ function getMusic () {
     window.aa = instance
     // instance.setRate(1.5)
     // instance.setDelay(3)
-    getEffect('irHall.ogg')
-    instance.on('start', () => {
+    // getEffect('irHall.ogg')
+    instance.on('startBefore', () => {
       instance.resumeState()
       // toogle(instance)
     })
     
     h.ready().then(() => {
-      instance.start(10)
+      instance.start(10, 10)
       progress(instance)
     })
   })

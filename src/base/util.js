@@ -59,7 +59,6 @@ export function connect (audioCtx, nodes, nodeNames, hertz, cb) {
   let preNode
   for (let i = 0, len = nodeNames.length; i < len; i++) {
     let name = nodeNames[i]
- 
     if (i === 0) {
       nodes[name].connect(audioCtx.destination)
       preNode = nodes[name]
@@ -68,6 +67,12 @@ export function connect (audioCtx, nodes, nodeNames, hertz, cb) {
         // if set hertz and filter, we need connect filter nodes
         preNode = connectFilterNodes(audioCtx, hertz, preNode, cb)
       } else {
+        if (name === 'convolver') {
+          // if convolver buffer is null, we can't connect this node
+          if (nodes[name].buffer === null) {
+            continue
+          }
+        }
         nodes[name].connect(preNode)
         preNode = nodes[name]
       }

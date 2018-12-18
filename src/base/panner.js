@@ -158,6 +158,6 @@ export default class Panner {
   }
 
   setChannel (val) {
-    isNumber(val) && this.setPosition(val)
+    isNumber(val) && this.setPosition(val, 0, 0)
   }
 }
