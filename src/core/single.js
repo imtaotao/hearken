@@ -1,12 +1,14 @@
 import BaseUtil from '../base'
 import { startCoreFn, registerEvent } from './util'
-import { random, isUndef, isNumber, isArrayBuffer } from '../share'
+import { random, isUndef, isNumber, isArrayBuffer, isAudioBuffer } from '../share'
 
 export default class SingleHearken extends BaseUtil {
   constructor (Hearken, buffer, options) {
     super(Hearken.AudioCtx)
 
-    this.buffer = buffer
+    this.buffer = isArrayBuffer(buffer) ? buffer : null
+    this.audioBuffer = isAudioBuffer(buffer) ? buffer : null
+
     this.options = options
     this.Hearken = Hearken
     this.AudioCtx = Hearken.AudioCtx
@@ -15,7 +17,6 @@ export default class SingleHearken extends BaseUtil {
     // start time is a playing time, the forward time is not counted
     this.startTime = null
     this.playingTime = 0
-    this.audioBuffer = null
     this.starting = false
     this.playing = false
 
@@ -42,28 +43,30 @@ export default class SingleHearken extends BaseUtil {
         this.stop()
       }
 
+      this.dispatch('startBefore')
       this.resetContainer()
       this.callStop = false
 
       if (this.audioBuffer) {
         this.id = random()
         startCoreFn(this, time, duration)
-        resolve()
+        resolve(true)
         return
-      }  
+      }
   
       AudioCtx.decodeAudioData(buffer, audioBuffer => {
         this.buffer = null
         this.audioBuffer = audioBuffer
         this.id = random()
         startCoreFn(this, time, duration)
-        resolve()
+        resolve(true)
       })
     })
   }
 
   stop () {
     if (this.nodes) {
+      this.dispatch('stopBefore')
       const bufferSource = this.nodes.bufferSource
       const stopMusic = bufferSource.stop
         ? bufferSource.stop
@@ -127,9 +130,7 @@ export default class SingleHearken extends BaseUtil {
 
   setRate (rate) {
     const { nodes, AudioCtx, options } = this
-    rate = isUndef(rate)
-      ? options.rate
-      : rate
+    rate = isUndef(rate) ? options.rate : rate
 
     if (isNumber(rate)) {
       const bufferSource = nodes && nodes.bufferSource
@@ -144,9 +145,7 @@ export default class SingleHearken extends BaseUtil {
   setMute (isMute) {
     const { nodes, AudioCtx, options } = this
     const gainNode = nodes && nodes.gainNode
-    const mute = isUndef(isMute)
-      ? options.mute
-      : !!isMute
+    const mute = isUndef(isMute) ? options.mute : !!isMute
 
     options.mute = mute
 
@@ -186,7 +185,7 @@ export default class SingleHearken extends BaseUtil {
           if (gainNode && result !== false) {
             // a little ahead of the end
             gainNode.gain.linearRampToValueAtTime(originVolume, AudioCtx.currentTime + time)
-            resolve()
+            resolve(true)
           } else {
             resolve(false)
           }
@@ -198,8 +197,8 @@ export default class SingleHearken extends BaseUtil {
   }
 
   echo (time) {
-    if (isNumber(time)) {
-      return new Promise(resolve => {
+    return new Promise(resolve => {
+      if (isNumber(time)) {
         this.start().then(result => {
           const gainNode = this.nodes && this.nodes.gainNode
           if (gainNode && result !== false) {
@@ -207,20 +206,25 @@ export default class SingleHearken extends BaseUtil {
             // volume gradient
             gainNode.gain.exponentialRampToValueAtTime(0.001,
               this.AudioCtx.currentTime + time)
-            resolve()
+            resolve(true)
           } else {
             resolve(false)
           }
         })
-      })
-    }
-    return Promise.resolve(false)
+        return
+      }
+      resolve(false)
+    })
   }
 
   replaceBuffer (buffer) {
     if (isArrayBuffer(buffer)) {
       this.audioBuffer = null
       this.buffer = buffer
+      this.dispatch('replaceBuffer')
+    } else if (isAudioBuffer(buffer)) {
+      this.buffer = null
+      this.audioBuffer = buffer
       this.dispatch('replaceBuffer')
     }
   }

@@ -4,15 +4,18 @@ export default class Event {
   }
 
   on (event, fn) {
-    if (!this.listener[event]) {
-      this.listener[event] = []
+    if (typeof fn === 'function') {
+      if (!this.listener[event]) {
+        this.listener[event] = []
+      }
+      this.listener[event].push(fn)
+      return true
     }
-    this.listener[event].push(fn)
-    return true
+    return false
   }
 
   off (event, fn) {
-    if (this.listener[event]) {
+    if (typeof fn === 'function' && this.listener[event]) {
       const index = this.listener[event].indexOf(fn)
       if (index > -1) {
         this.listener[event].splice(index, 1)

@@ -7,7 +7,7 @@ const url = require('url')
 const path = require('path')
 const http = require('http')
 
-const basePath = './dev/music'
+const basePath = './resource'
 const port = 3000
 
 // some default mimes

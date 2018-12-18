@@ -1,0 +1,20 @@
+<template>
+  <div>
+    {{ a }}
+  </div>
+</template>
+
+<script>
+  import Grass from '@rustle/grass'
+  import style from './index.css'
+
+   @Grass.CSSModules(style)
+  export default class MediaSource extends Grass.Component {
+    constructor () {
+      super()
+      this.createResponseState({
+        a: 2,
+      })
+    }
+  }
+</script>

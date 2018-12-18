@@ -1,6 +1,7 @@
 import Event from '../event'
 import Panner from './panner'
 import Filter from './filter'
+import Convolver from './convolver'
 import { isNumber } from '../share'
 import SingleHearken from '../core/single'
 import { connect, createNodes } from './util'
@@ -12,6 +13,7 @@ export default class BaseUtil extends Event {
     this.audioBuffer = null
     this.panner = new Panner(this, AudioCtx)
     this.filter = new Filter(this, AudioCtx)
+    this.convolver = new Convolver(this, AudioCtx)
     this.isBufferSouceMode = this instanceof SingleHearken
   }
 
@@ -77,5 +79,6 @@ export default class BaseUtil extends Event {
     this.setDelay()
     this.filter.resumeState()
     this.panner.resumeState()
+    this.convolver.setStyle()
   }
 }

@@ -1,7 +1,5 @@
 import Hearken from '../src'
-import ajax from '../test/xhr'
-
-let h
+import { get } from '../test/xhr'
 
 export default function Partical (props) {
   props.play = play
@@ -28,7 +26,6 @@ export default function Partical (props) {
 
 function change (e) {
   const val = e.target.value - 50
-  // window.aa.nodes.panner.positionX.value = val / 100
   window.aa.panner.setChannel(val / 10)
 }
 
@@ -37,94 +34,82 @@ function play () {
 }
 
 function stop () {
-  window.h.children[0].stop()
+  window.aa.stop()
 }
 
 function start () {
-  window.h.children[0].start(2)
+  window.aa.start()
 }
 
 function pause () {
   window.h.pause()
 }
 
-// let i = 0
-// function getMusic () {
-//   ajax('http://localhost:3000/getParticalMusic?name=永夜', (error, result, continueFun) => {
-//     if (error) {
-//       console.log(error)
-//       return
-//     }
-
-//     const value = result.response
-
-//     if (i === 0) {
-//       window.h = h = new Hearken({
-//         mode: 'partical',
-//         loop: true,
-//         source: value,
-//         filter: 'default',
-//         hertz: 'default',
-//         mime: 'audio/mpeg',
-//       })
-
-//       h.start()
-//     }
-
-//     i++
-//   }, false)
-// }
+let h
+let time
+let i = 0
+let val = 1
+let instance
 
 window.h = h = new Hearken({
   loop: true,
   filter: 'default',
   hertz: 'default',
   mime: 'audio/mpeg',
-  volume: 5,
+  volume: 0.5,
 })
 
-var i = 0
-var instance
+function toogle (h) {
+  val = -val
+  h.panner.setChannel(val)
+  setTimeout(() => toogle(h), 5000)
+}
+
+function progress (instance) {
+  if (time) return
+  time = setInterval(() => {
+    const node = document.getElementById('one')
+    const p = instance.getCurrentTime(true) / instance.getDuration(true) * instance.options.rate
+    node.value = p * 100
+  }, 500)
+}
+
+function getEffect (name) {
+  get('http://localhost:3000/getMusic?name=convoler/' + name, buffer => {
+    const instance = window.aa
+    if (instance) {
+      const style = name.split('.')[0]
+      instance.convolver.appendBuffer(style, buffer).then(() => {
+        instance.convolver.setStyle(style)
+        console.log(style)
+      })
+    }
+  })
+}
+window.eff = getEffect
+
 function getMusic () {
-  const node = document.getElementById('one')
   let name = '毒苹果'
   if (i % 2 === 0) name = 'airplanes'
 
-  const xhr = new XMLHttpRequest()
-  xhr.open('GET', 'http://localhost:3000/getMusic?name=' + name)
-  xhr.onload = e => {
-    const buffer = e.target.response
-    if (instance) {
-      instance.replaceBuffer(buffer)
-    } else {
-      instance = h.create(buffer)
-    }
-   
+  get('http://localhost:3000/getMusic?name=' + name, buffer => {
+    instance
+      ? instance.replaceBuffer(buffer)
+      : instance = h.create(buffer)
+
+    window.aa = instance
+    // instance.setRate(1.5)
+    // instance.setDelay(3)
+    getEffect('irHall.ogg')
+    instance.on('start', () => {
+      instance.resumeState()
+      // toogle(instance)
+    })
+    
     h.ready().then(() => {
       instance.start(10)
-      window.aa = instance
-      console.log(instance.options);
-      instance.on('start', () => {
-        instance.resumeState()
-        // instance.setDelay(3)
-      })
-      // instance.setRate(1.5)
-      // toogle(instance)
-      setInterval(() => {
-        const p = instance.getCurrentTime(true) / instance.getDuration(true) * instance.options.rate
-        node.value = p * 100
-      }, 500)
+      progress(instance)
     })
-  }
-  xhr.withCredentials = true
-  xhr.responseType = 'arraybuffer'
-  xhr.send()
+  })
   i++
-}
-
-let val = 1
-function toogle (h) {
-  h.panner.setChannel(val)
-  val = -val
-  setTimeout(() => toogle(h), 5000)
 }

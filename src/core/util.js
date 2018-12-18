@@ -5,7 +5,16 @@ export function startCoreFn (Instance, time, duration) {
   const id = Instance.id
   const loop = options.loop
   const bufferSource = nodes.bufferSource
-  const connectOrder = ['panner', 'delay', 'gainNode', 'analyser', 'passFilterNode', 'filterNode', 'bufferSource']
+  const connectOrder = [
+    'panner',
+    'delay',
+    'gainNode',
+    'convolver',
+    'analyser',
+    'passFilterNode',
+    'filterNode', 
+    'bufferSource',
+  ]
   
   if (bufferSource.buffer) {
     console.warn('bufferSource is non-null')
@@ -48,22 +57,22 @@ export function startCoreFn (Instance, time, duration) {
 
 export function callChildMethod (children, allowCb, cb) {
   const length = children.length
-  if (length === 0) return
-
   const call = child => {
-    if (typeof allowCb === 'function') {
-      allowCb(child) !== false && cb(child)
-    } else {
-      cb(child)
-    }
+    typeof allowCb === 'function'
+      ? allowCb(child) !== false && cb(child)
+      : cb(child)
   }
 
-  if (length === 1) {
-    call(children[0])
-  } else {
-    for (let i = 0; i < length; i++) {
-      call(children[i])
-    }
+  switch (length) {
+    case 0 :
+      break
+    case 1 :
+      call(children[0])
+      break
+    default :
+      for (let i = 0; i < length; i++) {
+        call(children[i])
+      }
   }
 }
 

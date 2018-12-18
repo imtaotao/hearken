@@ -23,14 +23,25 @@ module.exports = {
       {
         test: /(\.js|\.grs)$/,
         use: [{
-          loader: "babel-loader",
+          loader: 'babel-loader',
         },{
-          loader: "grass-loader",
+          loader: 'grass-loader',
           options: {
             path: '@rustle/grass',
           },
         }]
       },
+      {
+        test: /\.css$/,
+        use: [
+          'style-loader',
+          {
+          loader: 'css-loader',
+          options: {
+            modules: true,
+          },
+        }]
+      }
     ]
   },
   plugins: [

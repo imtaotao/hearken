@@ -10,7 +10,7 @@ function getPannerNode (Instance, cb) {
 function dealWithArg (arg, defaultArgs, name) {
   return isNumber(arg)
       ? defaultArgs[name] = arg
-      : arg = defaultArgs[name]
+      : defaultArgs[name]
 }
 
 export default class Panner {
@@ -48,57 +48,55 @@ export default class Panner {
   }
 
   get pannerNode () {
-    return this.Sound.nodes
-      ? this.Sound.nodes.panner
-      : null
+    return this.Sound.nodes && this.Sound.nodes.panner
   }
 
   setPosition (x, y, z) {
-    const defaultArgs = this.pannerPosition
+    const { pannerNode, AudioCtx, pannerPosition } = this
 
-    x = dealWithArg(x, defaultArgs, 'x')
-    y = dealWithArg(y, defaultArgs, 'y')
-    z = dealWithArg(z, defaultArgs, 'z')
+    x = dealWithArg(x, pannerPosition, 'x')
+    y = dealWithArg(y, pannerPosition, 'y')
+    z = dealWithArg(z, pannerPosition, 'z')
 
-    getPannerNode(this, (panner, AudioCtx) => {
-      if (panner.positionX) {
-        panner.positionX.setValueAtTime(x, AudioCtx.currentTime)
-        panner.positionY.setValueAtTime(y, AudioCtx.currentTime)
-        panner.positionZ.setValueAtTime(z, AudioCtx.currentTime)
+    if (pannerNode) {
+      if (pannerNode.positionX) {
+        pannerNode.positionX.setValueAtTime(x, AudioCtx.currentTime)
+        pannerNode.positionY.setValueAtTime(y, AudioCtx.currentTime)
+        pannerNode.positionZ.setValueAtTime(z, AudioCtx.currentTime)
       } else {
-        panner.setPosition(x, y, z)
+        pannerNode.setPosition(x, y, z)
       }
-    })
+    }
   }
 
   setOrientation (x, y, z) {
-    const defaultArgs = this.pannerOrientation
+    const { pannerNode, AudioCtx, pannerOrientation } = this
 
-    x = dealWithArg(x, defaultArgs, 'x')
-    y = dealWithArg(y, defaultArgs, 'y')
-    z = dealWithArg(z, defaultArgs, 'z')
+    x = dealWithArg(x, pannerOrientation, 'x')
+    y = dealWithArg(y, pannerOrientation, 'y')
+    z = dealWithArg(z, pannerOrientation, 'z')
 
-    getPannerNode(this, (panner, AudioCtx) => {
-      if (panner.orientationX) {
-        panner.orientationX.setValueAtTime(x, AudioCtx.currentTime)
-        panner.orientationY.setValueAtTime(y, AudioCtx.currentTime)
-        panner.orientationZ.setValueAtTime(z, AudioCtx.currentTime)
+    if (pannerNode) {
+      if (pannerNode.orientationX) {
+        pannerNode.orientationX.setValueAtTime(x, AudioCtx.currentTime)
+        pannerNode.orientationY.setValueAtTime(y, AudioCtx.currentTime)
+        pannerNode.orientationZ.setValueAtTime(z, AudioCtx.currentTime)
       } else {
-        panner.setOrientation(x, y, z)
+        pannerNode.setOrientation(x, y, z)
       }
-    })
+    }
   }
 
   setConeAngle (inner, outer) {
-    const defaultArgs = this.coneAngle
+    const { pannerNode, coneAngle } = this
 
-    inner = dealWithArg(inner, defaultArgs, 'inner')
-    outer = dealWithArg(inner, defaultArgs, 'outer')
+    inner = dealWithArg(inner, coneAngle, 'inner')
+    outer = dealWithArg(inner, coneAngle, 'outer')
 
-    getPannerNode(this, pannerNode => {
+    if (pannerNode) {
       pannerNode.coneInnerAngle = inner
       pannerNode.coneOuterAngle = outer
-    })
+    }
   }
 
   setListenerOrientation (fx, fy, fz, ux, uy, uz) {

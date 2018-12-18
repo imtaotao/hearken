@@ -17,6 +17,8 @@ export const isObject = v => v && typeof v === 'object'
 
 export const isArrayBuffer = v => isType(v, 'ArrayBuffer')
 
+export const isAudioBuffer = v => isType(v, 'AudioBuffer')
+
 export function random (max = 1000000, min = 0, fractionDigits = 0) {
   return +(Math.random() * (max - min) + min).toFixed(fractionDigits)
 }

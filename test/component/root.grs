@@ -1,0 +1,39 @@
+<template>
+  <div>
+    <div styleName="expect-button">
+      <span @click="this.toogleShow.bind(this, i)" v-for="(val, i) of button">{{ val }}</span>
+    </div>
+    <div styleName="content-container">
+      <BufferSource v-show="showBufferSource" />
+      <MediaSource v-show="!showBufferSource" />
+    </div>
+  </div>
+</template>
+
+<script>
+  import Grass from '@rustle/grass'
+  import style from './root.css'
+  import MediaSource from './mediasource/index.grs'
+  import BufferSource from './buffersource/index.grs'
+
+  @Grass.CSSModules(style)
+  class Root extends Grass.Component {
+    constructor () {
+      super()
+      this.createResponseState({
+        button: ['buffersource', 'mediasource'],
+        showBufferSource: true,
+      })
+    }
+    toogleShow (i) {
+      this.state.showBufferSource = !i
+    }
+    component () {
+      return {
+        MediaSource,
+        BufferSource,
+      }
+    }
+  }
+  Root.$mount(document.getElementById('root'))
+</script>

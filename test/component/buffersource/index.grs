@@ -1,0 +1,25 @@
+<template>
+  <div>
+    {{ a }}
+  </div>
+</template>
+
+<script>
+  import Grass from '@rustle/grass'
+  import style from './index.css'
+  import Hearken from '../../../src'
+
+  @Grass.CSSModules(style)
+  export default class BufferSource extends Grass.Component {
+    constructor () {
+      super()
+      this.createResponseState({
+        a: 1,
+      })
+    }
+    created () {
+      console.log(Hearken);
+
+    }
+  }
+</script>

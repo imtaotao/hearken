@@ -1,7 +1,7 @@
 import Event from '../event'
 import SingleHearken from './single'
 import { callChildMethod } from './util'
-import { isArrayBuffer, filterOptions, isNumber } from '../share'
+import { isArrayBuffer, filterOptions, isAudioBuffer } from '../share'
 
 export default class Hearken extends Event {
   constructor (options) {
@@ -12,17 +12,18 @@ export default class Hearken extends Event {
   }
 
   create (buffer, options) {
-    if (isArrayBuffer(buffer)) {
-      const config = options
+    const child = new SingleHearken(this, buffer,
+      options
         ? filterOptions(options)
         : Object.create(this.options)
+    )
 
-      const child = new SingleHearken(this, buffer, config)
-      this.children.push(child)
-      return child
-    } else {
-      throw new Error('buffer is must be a Arraybuffer')
+    if (!child.buffer && !child.audioBuffer) {
+      throw new Error('The resource must be of type arraybuffer or audiobuffer')
     }
+
+    this.children.push(child)
+    return child
   }
 
   play () {

@@ -1,0 +1,33 @@
+.expect-button {
+  height: 60px;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+}
+.expect-button span {
+  display: inline-block;
+  width: 120px;
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  background: #8782ad;
+  color: #fff;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.expect-button span:hover {
+  background: #6a6780;
+}
+
+.content-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  margin: 60px 20px 20px;
+  border-radius: 5px;
+  background: rgba(233, 210, 154, 0.1);
+  box-shadow: 0 0 10px -6px;
+}

@@ -23,11 +23,9 @@ function filterAssignment (Instance, data) {
 }
 
 function setHighOrLowPassFilter (Instance, type, hz, peak) {
-  let { Sound, passFilter } = Instance
+  let { passFilter, passFilterNode } = Instance
   
-  if (Sound.nodes) {
-    const node = Sound.nodes.passFilterNode
-
+  if (passFilterNode) {
     if (passFilter) {
       hz = isNumber(hz) ? hz : passFilter.hz
       peak = isNumber(peak) ? peak : passFilter.peak
@@ -36,9 +34,9 @@ function setHighOrLowPassFilter (Instance, type, hz, peak) {
       peak = isNumber(peak) ? peak : null
     }
 
-    node.type = type
-    peak && (node.Q.value = peak)
-    hz && (node.frequency.value = hz)
+    passFilterNode.type = type
+    peak && (passFilterNode.Q.value = peak)
+    hz && (passFilterNode.frequency.value = hz)
 
     // reset pass filter
     passFilter = passFilter || {}
@@ -53,14 +51,21 @@ export default class Filter {
   constructor (SoundInstance, AudioCtx) {
     this.zoom = 1.5
     this.filterNodes = {}
-    this.hertz = DEFAULTHZ
+    
     // passFilter is "lowpass" or "highpass", the value have "type"、"hz" 、"peak"、 and "node"
     this.passFilter = null
     this.filterStyle = null
 
     this.AudioCtx = AudioCtx
     this.Sound = SoundInstance
+
+    // default style
+    this.hertz = DEFAULTHZ
     this.styles = DEFAULTFILTER
+  }
+
+  get passFilterNode () {
+    return this.Sound.nodes && this.Sound.nodes.passFilterNode
   }
 
   setHertz (hertz) {
