@@ -70,8 +70,8 @@ function progress (instance) {
   time = setInterval(() => {
     const node = document.getElementById('one')
     node.value = instance.getPercent() * 100
-    // console.log(instance.getPercent());
-  }, 500)
+    console.log(instance.getPercent());
+  }, 20)
 }
 
 function getEffect (name) {
@@ -86,7 +86,7 @@ function getEffect (name) {
     }
   })
 }
-window.eff = getEffect
+window.getEffect = getEffect
 
 function getMusic () {
   let name = 'airplanes'
@@ -107,9 +107,18 @@ function getMusic () {
     })
     
     h.ready().then(() => {
-      instance.start(10, 10)
+      instance.fadeStart(3, 10, 10)
       progress(instance)
     })
   })
   i++
+}
+
+window.setf = function () {
+  window.aa.filter.setHertz([31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000])
+  window.aa.filter.setStyles({
+    jazz: [0, 0, 0, 5, 5, 5, 0, 3, 4, 5],
+    electron: [6, 5, 0, -5, -4, 0, 6, 8, 8, 7],
+  })
+  return window.aa.filter
 }

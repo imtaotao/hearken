@@ -1,5 +1,10 @@
-import { isArrayBuffer, isAudioBuffer } from '../share'
-
+import { disconnectNodes } from './util'
+import {
+  each,
+  isObject,
+  isArrayBuffer,
+  isAudioBuffer,
+} from '../share'
 export default class Convolver {
   constructor (SoundInstance, AudioCtx) {
     this.style = null
@@ -13,20 +18,23 @@ export default class Convolver {
   }
 
   setStyle (style) {
-    style = style || this.style
+    if (style !== this.style) {
+      style = style || this.style
 
-    if (style) {
-      const buffer = this.audioBufferList[style]
-      const existOfOriginBuffer = !!this.convolverNode.buffer
+      if (style) {
+        const buffer = this.audioBufferList[style]
+        const existOfOriginBuffer = !!this.convolverNode.buffer
 
-      // set style
-      if (buffer) this.style = style
+        // set style
+        if (buffer) this.style = style
 
-      if (this.convolverNode && buffer) {
-        this.convolverNode.buffer = buffer
-        // if origin buffer is null, we need reset connect nodes
-        if (!existOfOriginBuffer) {
-          this.Sound.connectNodes()
+        if (this.convolverNode && buffer) {
+          this.convolverNode.buffer = buffer
+          // if origin buffer is null, we need reset connect nodes
+          if (!existOfOriginBuffer) {
+            disconnectNodes(this.Sound)
+            this.Sound.connectNodes()
+          }
         }
       }
     }
@@ -50,6 +58,20 @@ export default class Convolver {
     })
   }
 
+  appendBufferList (bufferList) {
+    if (isObject(bufferList)) {
+      const promiseAll = []
+      each(bufferList, (buffer, style) => {
+        promiseAll.push(
+          this.appendBuffer(style, buffer)
+              .then(result => ({ [style]: result }))
+        )
+      })
+      return Promise.all(promiseAll)
+    }
+    return Promise.resolve(false)
+  }
+
   remove () {
     if (this.convolverNode) {
       this.convolverNode.buffer = null
@@ -57,5 +79,9 @@ export default class Convolver {
       this.Sound.connectNodes()
     }
     this.style = null
+  }
+
+  resumeState () {
+    this.setStyle()
   }
 }

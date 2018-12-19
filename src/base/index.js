@@ -18,12 +18,12 @@ export default class BaseUtil extends Event {
   }
 
   connectNodes () {
+    // If there are no nodes, representatives did not start playing,
+    // because every player will reset nodes, stop nodes will be cleared
     if (this.nodes) {
-      const { nodes, filter, AudioCtx, connectOrder } = this
-      connect(AudioCtx, nodes, connectOrder, filter.hertz, 
-        (hz, nowFilter) => {
-          filter.filterNodes[hz] = nowFilter
-        })
+      connect(this, (hz, nowFilter) => {
+        this.filter.filterNodes[hz] = nowFilter
+      })
     }
   }
 
@@ -78,8 +78,13 @@ export default class BaseUtil extends Event {
     this.setRate &&this.setRate()
 
     this.setDelay()
-    this.filter.resumeState()
     this.panner.resumeState()
-    this.convolver.setStyle()
+    this.convolver.resumeState()
+
+    // since filterNodes will be re-created in connectNodes method,
+    // so we have to wait until after a new filterNodes is created in order to restore state
+    this.once('start', () => {
+      this.filter.resumeState()
+    })
   }
 }

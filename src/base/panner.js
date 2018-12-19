@@ -1,18 +1,5 @@
 import { isNumber } from '../share'
 
-function getPannerNode (Instance, cb) {
-  const nodes = Instance.Sound.nodes
-  if (nodes && nodes.panner) {
-    cb(nodes.panner, Instance.AudioCtx)
-  }
-}
-
-function dealWithArg (arg, defaultArgs, name) {
-  return isNumber(arg)
-      ? defaultArgs[name] = arg
-      : defaultArgs[name]
-}
-
 export default class Panner {
   constructor (SoundInstance, AudioCtx) {
     this.Sound = SoundInstance
@@ -160,4 +147,10 @@ export default class Panner {
   setChannel (val) {
     isNumber(val) && this.setPosition(val, 0, 0)
   }
+}
+
+function dealWithArg (arg, defaultArgs, name) {
+  return isNumber(arg)
+      ? defaultArgs[name] = arg
+      : defaultArgs[name]
 }

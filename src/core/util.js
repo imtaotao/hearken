@@ -1,4 +1,4 @@
-import { isUndef, getLegalDuration } from '../share'
+import { range, isUndef } from '../share'
 
 export function startCoreFn (Instance, time, duration) {
   const { nodes, options, audioBuffer } = Instance
@@ -13,10 +13,9 @@ export function startCoreFn (Instance, time, duration) {
 
   // save resouce duration
   if (duration !== Instance.duration) {
-    duration = getLegalDuration(audioBuffer.duration, duration)
     Instance.duration = isUndef(duration)
       ? audioBuffer.duration
-      : duration
+      : range(0, audioBuffer.duration, duration)
   }
 
   Instance.dispatch('startBefore')

@@ -1,6 +1,13 @@
 import BaseUtil from '../base'
 import { startCoreFn, registerEvent } from './util'
-import { random, getRange, isUndef, isNumber, isArrayBuffer, isAudioBuffer } from '../share'
+import {
+  range,
+  random,
+  isUndef,
+  isNumber,
+  isArrayBuffer,
+  isAudioBuffer,
+} from '../share'
 
 export default class SingleHearken extends BaseUtil {
   constructor (Hearken, buffer, options) {
@@ -89,6 +96,7 @@ export default class SingleHearken extends BaseUtil {
       this.playingTime = 0
       this.starting = false
       this.callStop = true
+      this.filter.filterNodes = Object.create(null)
       this.dispatch('stop')
     }
   }
@@ -123,7 +131,7 @@ export default class SingleHearken extends BaseUtil {
 
     const currentTime = this.getCurrentTime(true)
     const percent = currentTime / duration
-    return getRange(0, 1, percent)
+    return range(0, 1, percent)
   }
 
   playing () {

@@ -1,3 +1,5 @@
+import { each } from '../share'
+
 const mediaElementNodes = new WeakMap()
 
 export function createNodes (audioCtx, options, needMedia, audioElment) {
@@ -55,17 +57,22 @@ function saveMediaSource (audioCtx, audio) {
 }
 
 // connect nodes
-export function connect (audioCtx, nodes, nodeNames, hertz, cb) {
+export function connect (Instance, cb) {
   let preNode
-  for (let i = 0, len = nodeNames.length; i < len; i++) {
-    let name = nodeNames[i]
+  const { nodes, filter, AudioCtx, connectOrder } = Instance
+
+  for (let i = 0, len = connectOrder.length; i < len; i++) {
+    let name = connectOrder[i]
+
     if (i === 0) {
-      nodes[name].connect(audioCtx.destination)
+      nodes[name].connect(AudioCtx.destination)
       preNode = nodes[name]
     } else {
       if (name === 'filterNode') {
         // if set hertz and filter, we need connect filter nodes
-        preNode = connectFilterNodes(audioCtx, hertz, preNode, cb)
+        if (filter.isExist()) {
+          preNode = connectFilterNodes(AudioCtx, filter.hertz, preNode, cb)
+        }
       } else {
         if (name === 'convolver') {
           // if convolver buffer is null, we can't connect this node
@@ -78,6 +85,14 @@ export function connect (audioCtx, nodes, nodeNames, hertz, cb) {
       }
     }
   }
+}
+
+export function disconnectNodes (Instance) {
+  const nodes = Instance.nodes
+  const filterNodes = Instance.filter.filterNodes
+
+  each(nodes, node => node.disconnect())
+  each(filterNodes, node => node.disconnect())
 }
 
 export function connectFilterNodes (audioCtx, hertz, preNode, cb) {

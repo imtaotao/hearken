@@ -1,7 +1,155 @@
+import { disconnectNodes } from './util'
 import { isObject, isNumber } from '../share'
-import { DEFAULTHZ, DEFAULTFILTER } from '../default'
 
 const INIT = () => {}
+
+// this class is responsible for filter
+export default class Filter {
+  constructor (SoundInstance, AudioCtx) {
+    this.zoom = 1.5
+    
+    // passFilter is "lowpass" or "highpass", the value have "type"、"hz" 、"peak"、 and "node"
+    this.passFilter = null
+    this.filterStyle = null
+
+    this.AudioCtx = AudioCtx
+    this.Sound = SoundInstance
+
+    this.hertz = null
+    this.styles = null
+    this.filterNodes = Object.create(null)
+  }
+
+  get passFilterNode () {
+    return this.Sound.nodes && this.Sound.nodes.passFilterNode
+  }
+
+  isExist () {
+    return !!(this.hertz && this.styles)
+  }
+
+  setHertz (hertz) {
+    if (Array.isArray(hertz)) {
+      this.hertz = hertz
+    }
+  }
+
+  // we need check styles args
+  setStyles (styles) {
+    if (isObject(styles)) {
+      this.styles = styles
+    }
+  }
+
+  setFilter (hz, val) {
+    const { Sound, filterNodes } = this
+    if (!Object.keys(filterNodes).length) {
+      disconnectNodes(Sound)
+      Sound.connectNodes()
+    }
+    
+    this.passFilter = null
+    this.filterStyle = null
+
+    const nowFilter = this.filterNodes[hz]
+    // if no filter node, now representatives of the voice does not play
+    if (nowFilter) {
+      nowFilter.gain.setValueAtTime(val, this.AudioCtx.currentTime)
+    }
+  }
+
+  setStyle (styleName) {
+    if (styleName !== this.filterStyle) {
+      styleName = styleName || this.filterStyle
+
+      if (styleName) {
+        this.filterStyle = styleName
+        const { styles, Sound, filterNodes } = this
+  
+        if (this.isExist()) {
+          // if set init style, Judging the INIT function is fine
+          const data = styleName === INIT
+            ? INIT
+            : styles[styleName]
+
+          if (data) {
+            // if filterNodes length is 0, the sound maybe playing, maybe stoped,
+            // we need create new filter nodes
+            if (!Object.keys(filterNodes).length) {
+              disconnectNodes(Sound)
+              Sound.connectNodes()
+            }
+  
+            // If length is still 0 after creating a new node, it is stoped
+            if (Object.keys(filterNodes).length) {
+              filterAssignment(this, data)
+            }
+  
+            this.passFilter = null
+            this.filterStyle = styleName
+          }
+        }
+      }
+    }
+  }
+
+  // type: "lowpass", "highpass", "bandpass", "lowshelf", "highshelf", "peaking", "notch", "allpass"
+  // default is "peaking"
+  setType (type) {
+    if (type && typeof type === 'string') {
+      let keys = Object.keys(this.filterNodes)
+
+      if (!keys.length) {
+        disconnectNodes(this.Sound)
+        this.Sound.connectNodes()
+        keys = Object.keys(this.filterNodes)
+      }
+
+      // If length is still 0 after creating a new node, it is stoped
+      if (!keys.length) return
+
+      for (let i = 0, len = keys.length; i < len; i++) {
+        const node = this.filterNodes[keys[i]]
+        node.type = type
+      }
+      this.passFilter = null
+    }
+  }
+
+  setHighPassFilter (hz, peak) {
+    return setHighOrLowPassFilter(this, 'highpass', hz, peak)
+  }
+
+  setLowPassFilter (hz, peak) {
+    return setHighOrLowPassFilter(this, 'lowpass', hz, peak)
+  }
+
+  setDefaultPassFilter () {
+    // pass filter node reset default param
+    setHighOrLowPassFilter(this, 'peaking', 16000, 1)
+  }
+
+  setDefaultStyle () {
+    this.setStyle(INIT)
+  }
+
+  setDefault () {
+    // "defaultPassfilter" must be called first, because it will be emptied when calling "defaultStyle"
+    this.setDefaultPassFilter()
+    this.setDefaultStyle()
+  }
+
+  resumeState () {
+    if (this.passFilter) {
+      const { type, hz, peak } = this.passFilter
+      type === 'highpass'
+        ? this.setHighPassFilter(hz, peak)
+        : this.setLowPassFilter(hz, peak)
+    } else {
+      this.setStyle()
+    }
+  }
+}
 
 function filterAssignment (Instance, data) {
   const { zoom, hertz, AudioCtx, filterNodes } = Instance
@@ -43,115 +191,5 @@ function setHighOrLowPassFilter (Instance, type, hz, peak) {
     passFilter.hz = hz
     passFilter.type = type
     passFilter.peak = peak
-  }
-}
-
-// this class is responsible for filter
-export default class Filter {
-  constructor (SoundInstance, AudioCtx) {
-    this.zoom = 1.5
-    this.filterNodes = {}
-    
-    // passFilter is "lowpass" or "highpass", the value have "type"、"hz" 、"peak"、 and "node"
-    this.passFilter = null
-    this.filterStyle = null
-
-    this.AudioCtx = AudioCtx
-    this.Sound = SoundInstance
-
-    // default style
-    this.hertz = DEFAULTHZ
-    this.styles = DEFAULTFILTER
-  }
-
-  get passFilterNode () {
-    return this.Sound.nodes && this.Sound.nodes.passFilterNode
-  }
-
-  setHertz (hertz) {
-    if (Array.isArray(hertz)) {
-      this.hertz = hertz
-    }
-  }
-
-  // we need check styles args
-  setStyles (styles) {
-    if (isObject(styles)) {
-      this.styles = styles
-    }
-  }
-
-  setFilter (hz, val) {
-    const nowFilter = this.filterNodes[hz]
-    if (nowFilter) {
-      nowFilter.gain.setValueAtTime(val, this.AudioCtx.currentTime)
-      this.passFilter = null
-      this.filterStyle = null
-    }
-  }
-
-  setStyle (styleName) {
-    styleName = styleName || this.filterStyle
-    
-    if (styleName) {
-      if (this.filterNodes && this.styles) {
-        const data = styleName === INIT
-          ? INIT
-          : this.styles[styleName]
-
-        if (data) {
-          filterAssignment(this, data)
-          this.passFilter = null
-          this.filterStyle = styleName
-        }
-      }
-    }
-  }
-
-  // type: "lowpass", "highpass", "bandpass", "lowshelf", "highshelf", "peaking", "notch", "allpass"
-  // default is peaking
-  setType (type) {
-    if (type && typeof type === 'string') {
-      const keys = Object.keys(this.filterNodes)
-      for (let i = 0, len = keys.length; i < len; i++) {
-        const node = this.filterNodes[keys[i]]
-        node.type = type
-      }
-      this.passFilter = null
-    }
-  }
-
-  setHighPassFilter (hz, peak) {
-    return setHighOrLowPassFilter(this, 'highpass', hz, peak)
-  }
-
-  setLowPassFilter (hz, peak) {
-    return setHighOrLowPassFilter(this, 'lowpass', hz, peak)
-  }
-
-  setDefaultPassFilter () {
-    // pass filter node reset default param
-    setHighOrLowPassFilter(this, 'peaking', 16000, 1)
-  }
-
-  setDefaultStyle () {
-    this.setStyle(INIT)
-  }
-
-  setDefault () {
-    // "defaultPassfilter" must be called first, because it will be emptied when calling "defaultStyle"
-    this.setDefaultPassFilter()
-    this.setDefaultStyle()
-  }
-
-  resumeState () {
-    if (this.passFilter) {
-      const { type, hz, peak } = this.passFilter
-      type === 'highpass'
-        ? this.setHighPassFilter(hz, peak)
-        : this.setLowPassFilter(hz, peak)
-    } else {
-      this.setStyle()
-    }
   }
 }

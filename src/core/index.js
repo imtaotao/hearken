@@ -1,7 +1,7 @@
 import Event from '../event'
 import SingleHearken from './single'
 import { callChildMethod } from './util'
-import { isArrayBuffer, filterOptions, isAudioBuffer } from '../share'
+import { filterOptions } from '../share'
 
 export default class Hearken extends Event {
   constructor (options) {

@@ -5,9 +5,7 @@ import {
   FFTSIZE,
 } from './default'
 
-export const isType = (v, type) => {
-  return Object.prototype.toString.call(v) === `[object ${type}]`
-}
+export const isType = (v, type) => Object.prototype.toString.call(v) === `[object ${type}]`
 
 export const isUndef = v => v === undefined || v === null
 
@@ -18,6 +16,8 @@ export const isObject = v => v && typeof v === 'object'
 export const isArrayBuffer = v => isType(v, 'ArrayBuffer')
 
 export const isAudioBuffer = v => isType(v, 'AudioBuffer')
+
+export const range = (min, max, val) => Math.max(Math.min(val, max), min)
 
 export function random (max = 1000000, min = 0, fractionDigits = 0) {
   return +(Math.random() * (max - min) + min).toFixed(fractionDigits)
@@ -33,13 +33,13 @@ export function once (fn) {
   }
 }
 
-export function getLegalDuration (max, duration) {
-  if (!duration) return duration
-  return Math.max(Math.min(duration, max), 0)
-}
+export function each (obj, cb) {
+  const keys = Object.keys(obj)
+  if (keys.length === 0) return
 
-export function getRange (min, max, val) {
-  return Math.max(Math.min(val, max), min)
+  for (let i = 0, len = keys.length; i < len; i++) {
+    cb(obj[keys[i]], keys[i])
+  }
 }
 
 export function filterOptions (options) {
