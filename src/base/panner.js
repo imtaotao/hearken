@@ -151,6 +151,6 @@ export default class Panner {
 
 function dealWithArg (arg, defaultArgs, name) {
   return isNumber(arg)
-      ? defaultArgs[name] = arg
-      : defaultArgs[name]
+    ? defaultArgs[name] = arg
+    : defaultArgs[name]
 }

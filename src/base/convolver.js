@@ -5,6 +5,7 @@ import {
   isArrayBuffer,
   isAudioBuffer,
 } from '../share'
+
 export default class Convolver {
   constructor (SoundInstance, AudioCtx) {
     this.style = null

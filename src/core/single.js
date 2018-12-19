@@ -196,6 +196,8 @@ export default class SingleHearken extends BaseUtil {
         setTimeout(() => this.stop(),  time * 990)
         gainNode.gain.linearRampToValueAtTime(0, AudioCtx.currentTime + time)
       }
+    } else {
+      this.stop()
     }
   }
 

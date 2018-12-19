@@ -70,7 +70,7 @@ function progress (instance) {
   time = setInterval(() => {
     const node = document.getElementById('one')
     node.value = instance.getPercent() * 100
-    console.log(instance.getPercent());
+    // console.log(instance.getPercent());
   }, 20)
 }
 
