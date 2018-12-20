@@ -42,6 +42,18 @@ export function each (obj, cb) {
   }
 }
 
+export function createAudioContext (Constructor) {
+  if (!Constructor.AudioContext) {
+    Constructor.AudioContext = new (
+      window.AudioContext ||
+      window.webkitAudioContext ||
+      window.mozAudioContext ||
+      window.msAudioContext
+    )	
+  }
+  return Constructor.AudioContext
+}
+
 export function filterOptions (options) {
   // boolean
   const loop = !!options.loop

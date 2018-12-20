@@ -12,13 +12,17 @@
 
 <script>
   import Grass from '@rustle/grass'
-  import dealWithMusic, { testAjax } from './music'
+  import Hearken from '../src'
+  import ajax from '../test/xhr'
 
   export default class Root extends Grass.Component {
     constructor () {
       super()
       // testAjax()
-      this.Hearken = null
+      this.Hearken = new Hearken.Media()
+      this.stream = new Hearken.Stream('audio/mpeg', true)
+      window.h = this.Hearken
+      window.s = this.stream
     }
 
     play () {
@@ -35,7 +39,7 @@
 
     start () {
       if (this.Hearken) {
-        this.Hearken.start()
+        this.Hearken.start(this.stream)
       }
     }
 
@@ -46,28 +50,15 @@
     }
 
     getMusic () {
-      this.ajax(musicName.value, (result, xhr) => {
-        const data = result.response
-        if (!this.Hearken) {
-          this.Hearken = dealWithMusic(data)
-        } else {
-          console.log(this.Hearken.id);
-          this.Hearken.replaceSound(data)
-          .then(() => {
-            console.log(this.Hearken.id);
-            this.Hearken.start()
-          })
-        }
+      ajax('http://localhost:3000/getParticalMusic?name=盲点', (err, { response }, fn) => {
+        if (err) throw err
+        window.aa = response
+        this.stream.append(response)
+        fn()
       })
-    }
-
-    ajax (name, cb) {
-      const xhr = new XMLHttpRequest()
-      xhr.open('GET', 'http://localhost:3000/getMusic?name=' + name)
-      xhr.onload = e => cb(e.target, xhr)
-      xhr.withCredentials = true
-      xhr.responseType = 'arraybuffer'
-      xhr.send()
+      ajax.end = this.stream.end
+      this.Hearken.start(this.stream).then(r => console.log(r))
+      this.Hearken.on('playError', e => console.log(e))
     }
   }
 </script>

@@ -1,14 +1,14 @@
 import Event from '../event'
 import SingleHearken from './single'
 import { callChildMethod } from './util'
-import { filterOptions } from '../share'
+import { filterOptions, createAudioContext } from '../share'
 
 export default class Hearken extends Event {
   constructor (options) {
     super()
     this.children = []
     this.options = filterOptions(options || {})
-    this.AudioCtx = Hearken.AudioContext
+    this.AudioCtx = createAudioContext(Hearken)
   }
 
   create (buffer, options) {
@@ -63,10 +63,12 @@ export default class Hearken extends Event {
     })
   }
 
-  // this method will resume all sound, return promise
-  ready () {
-    return this.AudioCtx.state === 'running'
-      ? Promise.resolve()
-      : this.AudioCtx.resume()
+  // this method will resume all sound
+  ready (cb) {
+    if (typeof cb === 'function') {
+      this.AudioCtx.state === 'running'
+        ? cb()
+        : this.AudioCtx.resume().then(cb)
+    }
   }
 }

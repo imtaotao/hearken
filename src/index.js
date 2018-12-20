@@ -1,14 +1,8 @@
 import Hearken from './core'
+import MediaElement from './media'
+import Stream_ from './media/stream'
 
-Hearken.AudioContext = createAudioContext()
-
-function createAudioContext () {
-  return new (
-    window.AudioContext ||
-    window.webkitAudioContext ||
-    window.mozAudioContext ||
-    window.msAudioContext
-  )	
-}
+Hearken.Stream = Stream_
+Hearken.Media = MediaElement
 
 export default Hearken

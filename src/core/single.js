@@ -12,7 +12,7 @@ import {
 export default class SingleHearken extends BaseUtil {
   constructor (Hearken, buffer, options) {
     super(Hearken.AudioCtx)
-
+    this.id = null
     this.buffer = isArrayBuffer(buffer) ? buffer : null
     this.audioBuffer = isAudioBuffer(buffer) ? buffer : null
 
@@ -54,7 +54,7 @@ export default class SingleHearken extends BaseUtil {
         return
       }
 
-      let { time, duration } = this.getNomalTimeAndDuration(t, d)
+      const { time, duration } = this.getNomalTimeAndDuration(t, d)
 
       // we can't allow mutilple sound play, so, we need stop previous sound
       if (this.nodes && !noStop) {

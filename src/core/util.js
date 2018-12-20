@@ -3,7 +3,6 @@ import { range, isUndef } from '../share'
 export function startCoreFn (Instance, time, duration) {
   const { nodes, options, audioBuffer } = Instance
   const id = Instance.id
-  const loop = options.loop
   const bufferSource = nodes.bufferSource
   
   if (bufferSource.buffer) {
@@ -22,10 +21,10 @@ export function startCoreFn (Instance, time, duration) {
   Instance.connectNodes()
 
   bufferSource.buffer = audioBuffer
-  bufferSource.loop = loop
+  bufferSource.loop = options.loop
   bufferSource.onended = e => {
     // if pass call stop method dispatch ended event, we need prevent
-    if (loop && !isUndef(duration) &&
+    if (options.loop && !isUndef(duration) &&
         !Instance.callStop && Instance.id === id) {
       Instance.startTime = null
       Instance.start(time, duration, true)

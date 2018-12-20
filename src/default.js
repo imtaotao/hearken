@@ -1,4 +1,4 @@
-// save default args
+// default args
 export const RATE = 1
 export const DELAY = 0
 export const VOLUME = 1
