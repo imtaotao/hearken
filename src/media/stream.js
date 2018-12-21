@@ -1,3 +1,4 @@
+import Queue from './queue'
 import Event from '../event'
 import { once } from '../share'
 
@@ -12,6 +13,7 @@ export default class Stream extends Event {
     this.sourceBuffer = null
     // 缓存 set
     this.cacheBuffers = []
+    this.queue = new Queue()
     this.mediaSource = new MediaSource()
     this.init()
   }
