@@ -18,6 +18,7 @@ export function startCoreFn (Instance, time, duration) {
   }
 
   Instance.dispatch('startBefore')
+  Instance.resumeState()
   Instance.connectNodes()
 
   bufferSource.buffer = audioBuffer

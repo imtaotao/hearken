@@ -11,7 +11,7 @@ import {
 
 export default class SingleHearken extends BaseUtil {
   constructor (Hearken, buffer, options) {
-    super(Hearken.AudioCtx)
+    super()
     this.id = null
     this.buffer = isArrayBuffer(buffer) ? buffer : null
     this.audioBuffer = isAudioBuffer(buffer) ? buffer : null
@@ -143,13 +143,13 @@ export default class SingleHearken extends BaseUtil {
   setVolume (volume) {
     const { nodes, AudioCtx, options } = this
     const gainNode = nodes && nodes.gainNode
-    volume = isUndef(volume)
-      ? options.volume
-      : volume
+    volume = isNumber(volume)
+      ? volume
+      : options.volume
 
     options.volume = volume
 
-    if (gainNode && isNumber(volume)) {
+    if (gainNode) {
       gainNode.gain.setValueAtTime(volume, AudioCtx.currentTime)
     }
   }

@@ -7,11 +7,14 @@ import {
 } from '../share'
 
 export default class Convolver {
-  constructor (SoundInstance, AudioCtx) {
+  constructor (SoundInstance) {
     this.style = null
-    this.AudioCtx = AudioCtx
     this.Sound = SoundInstance
     this.audioBufferList = {} 
+  }
+
+  get AudioCtx () {
+    return this.Sound.AudioCtx
   }
 
   get convolverNode () {

@@ -7,13 +7,13 @@ import SingleHearken from '../core/single'
 import { connect, createNodes } from './util'
 
 export default class BaseUtil extends Event {
-  constructor (AudioCtx) {
+  constructor () {
     super()
     this.nodes = null
     this.audioBuffer = null
-    this.panner = new Panner(this, AudioCtx)
-    this.filter = new Filter(this, AudioCtx)
-    this.convolver = new Convolver(this, AudioCtx)
+    this.panner = new Panner(this)
+    this.filter = new Filter(this)
+    this.convolver = new Convolver(this)
     this.isBufferSouceMode = this instanceof SingleHearken
   }
 

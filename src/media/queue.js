@@ -1,4 +1,4 @@
-export class Queue {
+export default class Queue {
  constructor () {
     this.fx = []
     // the init is the first call flag
@@ -6,7 +6,7 @@ export class Queue {
     this.lock = false
   }
 
-  register(fn) {
+  register (fn) {
     if (typeof fn === 'function') {
       this.fx.push(fn)
 
@@ -27,7 +27,7 @@ export class Queue {
         this.init = true
       }
   
-      const fn = fx.shift()
+      const fn = this.fx.shift()
   
       if (typeof fn === 'function') {
         const next = data => {
@@ -35,7 +35,7 @@ export class Queue {
           // call next fn
           this.dispatch(data)
         }
-        // the call fn, we need lock
+        // call fn, we need lock
         this.lock = true
         fn.call(null, next, data)
       }

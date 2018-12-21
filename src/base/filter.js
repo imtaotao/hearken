@@ -5,19 +5,22 @@ const INIT = () => {}
 
 // this class is responsible for filter
 export default class Filter {
-  constructor (SoundInstance, AudioCtx) {
+  constructor (SoundInstance) {
     this.zoom = 1.5
     
     // passFilter is "lowpass" or "highpass", the value have "type"、"hz" 、"peak"、 and "node"
     this.passFilter = null
     this.filterStyle = null
 
-    this.AudioCtx = AudioCtx
     this.Sound = SoundInstance
 
     this.hertz = null
     this.styles = null
     this.filterNodes = Object.create(null)
+  }
+
+  get AudioCtx () {
+    return this.Sound.AudioCtx
   }
 
   get passFilterNode () {

@@ -18,11 +18,10 @@
   export default class Root extends Grass.Component {
     constructor () {
       super()
-      // testAjax()
-      this.Hearken = new Hearken.Media()
-      this.stream = new Hearken.Stream('audio/mpeg', true)
+      this.Hearken = new Hearken.Media({ loop: true })
+      this.stream = null
+      this.index = 0
       window.h = this.Hearken
-      window.s = this.stream
     }
 
     play () {
@@ -39,7 +38,7 @@
 
     start () {
       if (this.Hearken) {
-        this.Hearken.start(this.stream)
+        this.Hearken.start(this.stream, 5, 20)
       }
     }
 
@@ -50,14 +49,24 @@
     }
 
     getMusic () {
-      ajax('http://localhost:3000/getParticalMusic?name=盲点', (err, { response }, fn) => {
+      this.index++
+      const stream = this.stream = new Hearken.Stream('audio/mpeg')
+      window.s = this.stream
+
+      const name = this.index % 2 === 0
+        ? 'airplanes'
+        : 'airplanes'
+
+      console.log(name);
+      ajax('http://localhost:3000/getParticalMusic?name=' + name, (err, { response }, fn) => {
         if (err) throw err
         window.aa = response
-        this.stream.append(response)
+        stream.append(response)
         fn()
       })
-      ajax.end = this.stream.end
-      this.Hearken.start(this.stream).then(r => console.log(r))
+
+      ajax.end = () => stream.end()
+      this.Hearken.start(stream, 5, 20).then(r => console.log(r))
       this.Hearken.on('playError', e => console.log(e))
     }
   }

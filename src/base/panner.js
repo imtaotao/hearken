@@ -1,9 +1,8 @@
 import { isNumber } from '../share'
 
 export default class Panner {
-  constructor (SoundInstance, AudioCtx) {
+  constructor (SoundInstance) {
     this.Sound = SoundInstance
-    this.AudioCtx = AudioCtx
     // default args
     this.pannerPosition = {
       x: 0,
@@ -32,6 +31,10 @@ export default class Panner {
       inner: 360,
       outer: 0,
     }
+  }
+
+  get AudioCtx () {
+    return this.Sound.AudioCtx
   }
 
   get pannerNode () {
