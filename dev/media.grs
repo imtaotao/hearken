@@ -77,8 +77,7 @@
       ajax('http://localhost:3000/getParticalMusic?name=' + name, (err, { response }, fn) => {
         if (err) throw err
         window.aa = response
-        stream.append(response)
-        fn()
+        stream.awaitAppend(response).then(fn)
       })
 
       ajax.end = () => stream.end()

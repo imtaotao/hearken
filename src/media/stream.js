@@ -21,10 +21,7 @@ export default class Stream extends Event {
 
   get removed () {
     const buffers = this.mediaSource.sourceBuffers
-    if (~[].indexOf.call(buffers, this.sourceBuffer)) {
-      return false
-    }
-    return true
+    !!~[].indexOf.call(buffers, this.sourceBuffer)
   }
 
   init () {
@@ -86,6 +83,7 @@ export default class Stream extends Event {
     })
   }
 
+  // auto into queue, await append
   append (buffer) {
     if (isArrayBuffer(buffer)) {
       this.ready(() => {
@@ -109,6 +107,31 @@ export default class Stream extends Event {
         })
       })
     }
+  }
+
+  // return promise, allow user append
+  awaitAppend (buffer) {
+    return new Promise(resolve => {
+      if (isArrayBuffer(buffer)) {
+          this.ready(() => {
+            if (this.sourceBuffer.updating) {
+              const addfn = () => {
+                // the soucebuffer maybe have deleted
+                !this.removed && this.sourceBuffer.appendBuffer(buffer)
+                this.sourceBuffer.removeEventListener('updateend', addfn)
+                resolve(true)
+              }
+              this.sourceBuffer.addEventListener('updateend', addfn)
+            } else {
+              !this.removed && this.sourceBuffer.appendBuffer(buffer)
+              // call next fn, append next buffer
+              resolve(true)
+            }
+          })
+      } else {
+        resolve(false)
+      }
+    })
   }
 
   ready (cb) {
