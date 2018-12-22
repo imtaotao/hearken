@@ -142,8 +142,8 @@ export default class SingleHearken extends BaseUtil {
       const { nodes, AudioCtx, options } = this
       rate = isNumber(rate) ? rate : options.rate
 
-      const bufferSource = nodes && nodes.bufferSource
       options.rate = rate
+      const bufferSource = nodes && nodes.bufferSource
 
       if (bufferSource) {
         bufferSource.playbackRate.setValueAtTime(rate, AudioCtx.currentTime)

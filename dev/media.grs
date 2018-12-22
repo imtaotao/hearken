@@ -13,9 +13,9 @@
 <script>
   import Grass from '@rustle/grass'
   import Hearken from '../src'
-  import ajax from '../test/xhr'
+  import ajax, { get } from '../test/xhr'
 
-  const times = [5, 5]
+  const times = [5, 30]
   export default class Root extends Grass.Component {
     constructor () {
       super()
@@ -23,6 +23,7 @@
       this.stream = null
       this.index = 0
       window.h = this.Hearken
+      window.getEffect = this.getEffect
     }
 
     play () {
@@ -49,6 +50,20 @@
       }
     }
 
+    getEffect (name) {
+      console.log();
+      get('http://localhost:3000/getMusic?name=convoler/' + name, buffer => {
+        const instance = window.h
+        if (instance) {
+          const style = name.split('.')[0]
+          instance.convolver.appendBuffer(style, buffer).then(() => {
+            instance.convolver.setStyle(style)
+            console.log(style)
+          })
+        }
+      })
+    }
+
     getMusic () {
       this.index++
       const stream = this.stream = new Hearken.Stream('audio/mpeg')
@@ -56,7 +71,7 @@
 
       const name = this.index % 2 === 0
         ? 'airplanes'
-        : '毒苹果'
+        : '盲点'
 
       console.log(name);
       ajax('http://localhost:3000/getParticalMusic?name=' + name, (err, { response }, fn) => {

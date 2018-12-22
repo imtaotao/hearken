@@ -104,6 +104,7 @@ export default class MediaElement extends BaseUtil {
         endTimer.now = Date.now()
         this.state = 'playing'
         this.dispatch('play')
+        return true
       })
     }
     return Promise.resolve(false)
@@ -117,6 +118,7 @@ export default class MediaElement extends BaseUtil {
         const { t, now } = endTimer
         clearTimeout(t)
         // update delay time
+        endTimer.t = null
         endTimer.delayTime -= (Date.now() - now)
       }
       this.state = 'pause'
@@ -142,7 +144,68 @@ export default class MediaElement extends BaseUtil {
     return this.audio.currentTime
   }
 
-  getDuration () {
+  getDuration () {}
+
+  setRate (rate) {
+    if (rate !== this.options.rate) {
+      const { audio, options } = this
+      rate = isNumber(rate) ? rate : options.rate
+      options.rate = rate
+
+      if (this.nodes) {
+        audio.playbackRate = rate
+      }
+    }
+  }
+
+  setMute (isMute) {
+    if (isMute !== this.options.mute) {
+      const { audio, options } = this
+      const mute = isUndef(isMute) ? options.mute : !!isMute
+
+      options.mute = mute
+      audio.muted = mute
+      this.dispatch('mute', mute)
+    }
+  }
+
+  fadePlay (time) {
+    if (isNumber(time)) {
+      return new Promise(resolve => {
+        const originVolume = this.options.volume
+        this.setVolume(0)
+        this.play().then(result => {
+          const { nodes, AudioCtx } = this
+          const gainNode = nodes && nodes.gainNode
+          if (gainNode && result !== false) {
+            gainNode.gain.linearRampToValueAtTime(originVolume, AudioCtx.currentTime + time)
+            resolve(true)
+          } else {
+            resolve(false)
+          }
+          // restore volume value
+          this.options.volume = originVolume
+        })
+      })
+    } else {
+      return this.play()
+    }
+  }
+
+  fadePause (time) {
+    if (this.state === 'playing') {
+      if (isNumber(time)) {
+        const { nodes, AudioCtx } = this
+        const gainNode = nodes && nodes.gainNode
+        if (gainNode) {
+          // a little ahead of the end
+          setTimeout(() => this.pause(),  time * 990)
+          gainNode.gain.linearRampToValueAtTime(0, AudioCtx.currentTime + time)
+        }
+      } else {
+        this.stop()
+      }
+    }
   }
 
   // we need check doucment event, allow play and check audioContext state
