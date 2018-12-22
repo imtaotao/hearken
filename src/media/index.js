@@ -2,7 +2,12 @@ import BaseUtil from '../base'
 import Stream from './stream'
 import { startCoreFn } from './util'
 import { disconnectNodes } from '../base/util'
-import { isUndef, filterOptions, createAudioContext } from '../share'
+import {
+  isUndef,
+  isNumber,
+  filterOptions,
+  createAudioContext,
+} from '../share'
 
 export default class MediaElement extends BaseUtil {
   constructor (options) {
@@ -64,7 +69,6 @@ export default class MediaElement extends BaseUtil {
         if (!sameExists(url)) {
           audio.src = url
           audio._url = url
-
           startCoreFn(this, time, duration, resolve)
         }
       }
@@ -128,21 +132,6 @@ export default class MediaElement extends BaseUtil {
       return this.start(url, time, duration)
     }
     return Promise.resolve(false)
-  }
-
-  setVolume (volume) {
-    const { audio, nodes, AudioCtx, options } = this
-    const gainNode = nodes && nodes.gainNode
-    volume = isNumber(volume)
-      ? volume
-      : options.volume
-
-    options.volume = volume
-
-    if (gainNode) {
-      gainNode.gain.setValueAtTime(volume, AudioCtx.currentTime)
-      audio.volume = volume
-    }
   }
 
   playing () {

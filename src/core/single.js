@@ -137,22 +137,6 @@ export default class SingleHearken extends BaseUtil {
       : this.starting
   }
 
-  setVolume (volume) {
-    if (volume !== this.options.volume) {
-      const { nodes, AudioCtx, options } = this
-      const gainNode = nodes && nodes.gainNode
-      volume = isNumber(volume)
-        ? volume
-        : options.volume
-
-      options.volume = volume
-
-      if (gainNode) {
-        gainNode.gain.setValueAtTime(volume, AudioCtx.currentTime)
-      }
-    }
-  }
-
   setRate (rate) {
     if (rate !== this.options.rate) {
       const { nodes, AudioCtx, options } = this

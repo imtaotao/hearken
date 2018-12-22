@@ -71,6 +71,22 @@ export default class BaseUtil extends Event {
     }
   }
 
+  setVolume (volume) {
+    if (volume !== this.options.volume) {
+      const { nodes, AudioCtx, options } = this
+      const gainNode = nodes && nodes.gainNode
+      volume = isNumber(volume)
+        ? volume
+        : options.volume
+
+      options.volume = volume
+
+      if (gainNode) {
+        gainNode.gain.setValueAtTime(volume, AudioCtx.currentTime)
+      }
+    }
+  }
+  
   resumeState () {
     // setVolume、setMute、setRate should have a sub-class implementation
     this.setVolume && this.setVolume()
