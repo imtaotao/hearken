@@ -11,17 +11,12 @@ export default class Hearken extends Event {
     this.AudioCtx = createAudioContext(Hearken)
   }
 
-  create (buffer, options) {
-    const child = new SingleHearken(this, buffer,
-      options
-        ? filterOptions(options)
-        : Object.create(this.options)
-    )
-
+  create (buffer, options = {}) {
+    Object.setPrototypeOf(options, this.options)
+    const child = new SingleHearken(this, buffer, options)
     if (!child.buffer && !child.audioBuffer) {
       throw new Error('The resource must be of type arraybuffer or audiobuffer')
     }
-
     this.children.push(child)
     return child
   }
@@ -63,11 +58,11 @@ export default class Hearken extends Event {
     })
   }
 
-  // this method will resume all sound
+  // this method will resume all sound, async call callback
   ready (cb) {
     if (typeof cb === 'function') {
       this.AudioCtx.state === 'running'
-        ? cb()
+        ? Promise.resolve().then(cb)
         : this.AudioCtx.resume().then(cb)
     }
   }

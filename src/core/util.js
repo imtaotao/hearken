@@ -2,7 +2,6 @@ import { range, isUndef } from '../share'
 
 export function startCoreFn (Instance, time, duration) {
   const { nodes, options, audioBuffer } = Instance
-  const id = Instance.id
   const bufferSource = nodes.bufferSource
   
   if (bufferSource.buffer) {
@@ -25,8 +24,7 @@ export function startCoreFn (Instance, time, duration) {
   bufferSource.loop = options.loop
   bufferSource.onended = e => {
     // if pass call stop method dispatch ended event, we need prevent
-    if (options.loop && !isUndef(duration) &&
-        !Instance.callStop && Instance.id === id) {
+    if (options.loop && !isUndef(duration) && !Instance.callStop) {
       Instance.startTime = null
       Instance.start(time, duration, true)
       return
@@ -40,7 +38,8 @@ export function startCoreFn (Instance, time, duration) {
 
   // the delay time is 0, because we used delayNode
   playMusic.call(bufferSource, 0, time, duration)
-
+  
+  Instance.playingTime = 0
   Instance.starting = true
   Instance.startTime = Date.now()
   Instance.dispatch('start')

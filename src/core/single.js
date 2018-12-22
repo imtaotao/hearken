@@ -2,7 +2,6 @@ import BaseUtil from '../base'
 import { startCoreFn, registerEvent } from './util'
 import {
   range,
-  random,
   isUndef,
   isNumber,
   isArrayBuffer,
@@ -12,7 +11,6 @@ import {
 export default class SingleHearken extends BaseUtil {
   constructor (Hearken, buffer, options) {
     super()
-    this.id = null
     this.buffer = isArrayBuffer(buffer) ? buffer : null
     this.audioBuffer = isAudioBuffer(buffer) ? buffer : null
 
@@ -65,7 +63,6 @@ export default class SingleHearken extends BaseUtil {
       this.callStop = false
 
       if (this.audioBuffer) {
-        this.id = random()
         startCoreFn(this, time, duration)
         resolve(true)
         return
@@ -74,7 +71,6 @@ export default class SingleHearken extends BaseUtil {
       AudioCtx.decodeAudioData(buffer, audioBuffer => {
         this.buffer = null
         this.audioBuffer = audioBuffer
-        this.id = random()
         startCoreFn(this, time, duration)
         resolve(true)
       })
@@ -89,6 +85,7 @@ export default class SingleHearken extends BaseUtil {
         ? bufferSource.stop
         : bufferSource.noteOff
 
+      bufferSource.onended = null
       stopMusic.call(bufferSource)
       
       this.nodes = null
@@ -141,24 +138,26 @@ export default class SingleHearken extends BaseUtil {
   }
 
   setVolume (volume) {
-    const { nodes, AudioCtx, options } = this
-    const gainNode = nodes && nodes.gainNode
-    volume = isNumber(volume)
-      ? volume
-      : options.volume
+    if (volume !== this.options.volume) {
+      const { nodes, AudioCtx, options } = this
+      const gainNode = nodes && nodes.gainNode
+      volume = isNumber(volume)
+        ? volume
+        : options.volume
 
-    options.volume = volume
+      options.volume = volume
 
-    if (gainNode) {
-      gainNode.gain.setValueAtTime(volume, AudioCtx.currentTime)
+      if (gainNode) {
+        gainNode.gain.setValueAtTime(volume, AudioCtx.currentTime)
+      }
     }
   }
 
   setRate (rate) {
-    const { nodes, AudioCtx, options } = this
-    rate = isUndef(rate) ? options.rate : rate
+    if (rate !== this.options.rate) {
+      const { nodes, AudioCtx, options } = this
+      rate = isNumber(rate) ? rate : options.rate
 
-    if (isNumber(rate)) {
       const bufferSource = nodes && nodes.bufferSource
       options.rate = rate
 
@@ -169,21 +168,23 @@ export default class SingleHearken extends BaseUtil {
   }
 
   setMute (isMute) {
-    const { nodes, AudioCtx, options } = this
-    const gainNode = nodes && nodes.gainNode
-    const mute = isUndef(isMute) ? options.mute : !!isMute
+    if (isMute !== this.options.mute) {
+      const { nodes, AudioCtx, options } = this
+      const gainNode = nodes && nodes.gainNode
+      const mute = isUndef(isMute) ? options.mute : !!isMute
 
-    options.mute = mute
+      options.mute = mute
 
-    if (gainNode) {
-      const volume = mute
-        ? 0
-        : isUndef(options.volume)
-          ? 1
-          : options.volume
+      if (gainNode) {
+        const volume = mute
+          ? 0
+          : isUndef(options.volume)
+            ? 1
+            : options.volume
 
-      gainNode.gain.setValueAtTime(volume, AudioCtx.currentTime)
-      this.dispatch('mute', mute)
+        gainNode.gain.setValueAtTime(volume, AudioCtx.currentTime)
+        this.dispatch('mute', mute)
+      }
     }
   }
 
@@ -254,6 +255,17 @@ export default class SingleHearken extends BaseUtil {
       this.buffer = null
       this.audioBuffer = buffer
       this.dispatch('replaceBuffer')
+    }
+  }
+
+  clone () {
+    const buffer = this.audioBuffer || this.buffer
+    if (buffer) {
+      const child = new SingleHearken(this.Hearken, buffer, this.options)
+      this.Hearken.children.push(child)
+      return child
+    } else {
+      throw new Error('can\'t clone this instance, because audiobuffer and buffer is null')
     }
   }
 }

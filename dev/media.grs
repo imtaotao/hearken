@@ -15,6 +15,7 @@
   import Hearken from '../src'
   import ajax from '../test/xhr'
 
+  const times = [5, 5]
   export default class Root extends Grass.Component {
     constructor () {
       super()
@@ -38,7 +39,7 @@
 
     start () {
       if (this.Hearken) {
-        this.Hearken.start(this.stream, 5, 20)
+        this.Hearken.start(this.stream, ...times)
       }
     }
 
@@ -55,7 +56,7 @@
 
       const name = this.index % 2 === 0
         ? 'airplanes'
-        : 'airplanes'
+        : '毒苹果'
 
       console.log(name);
       ajax('http://localhost:3000/getParticalMusic?name=' + name, (err, { response }, fn) => {
@@ -66,7 +67,7 @@
       })
 
       ajax.end = () => stream.end()
-      this.Hearken.start(stream, 5, 20).then(r => console.log(r))
+      this.Hearken.start(stream, ...times).then(r => console.log(r))
       this.Hearken.on('playError', e => console.log(e))
     }
   }

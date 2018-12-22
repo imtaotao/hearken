@@ -1,11 +1,10 @@
 import { once, isNumber } from '../share'
 
 export function startCoreFn (Instance, time, duration, cb) {
-  const { id, audio, options } = Instance
+  const { audio, options } = Instance
   const playEnd = once(() => {
-    const { state, id:nid } = Instance
     // if the end time is reached, we need to re-looping
-    if (options.loop && state !== 'pause' && nid === id) {
+    if (options.loop && Instance.state !== 'pause') {
       startCoreFn(Instance, time, duration)
       return
     }
@@ -31,7 +30,13 @@ export function startCoreFn (Instance, time, duration, cb) {
   
   const success = () => {
     if (isNumber(duration)) {
-      Instance.endTimer = setTimeout(playEnd, duration * 1000)
+      const delayTime = duration * 1000
+      // record play end data
+      Instance.endTimer = {
+        delayTime,
+        now: Date.now(),
+        t: setTimeout(playEnd, delayTime),
+      }
     }
     Instance.state = 'playing'
     Instance.dispatch('start')
@@ -40,7 +45,7 @@ export function startCoreFn (Instance, time, duration, cb) {
 
   const error = err => {
     // can't auto play
-    Instance.dispatch('playError', err)
+    Instance.dispatch('playerror', err)
     typeof cb === 'function' && cb(false)
     return err
   }

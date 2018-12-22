@@ -38,7 +38,7 @@ function stop () {
 }
 
 function start () {
-  window.aa.start()
+  window.aa.start(10, 10)
 }
 
 function pause () {
@@ -106,7 +106,7 @@ function getMusic () {
       // toogle(instance)
     })
     
-    h.ready().then(() => {
+    h.ready(() => {
       instance.fadeStart(3, 10, 10)
       progress(instance)
     })

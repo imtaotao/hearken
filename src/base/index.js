@@ -14,7 +14,7 @@ export default class BaseUtil extends Event {
     this.panner = new Panner(this)
     this.filter = new Filter(this)
     this.convolver = new Convolver(this)
-    this.isBufferSouceMode = this instanceof SingleHearken
+    this.mode = this instanceof SingleHearken ? 'Buffer' : 'Media'
   }
 
   connectNodes () {
