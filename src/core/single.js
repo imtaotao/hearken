@@ -19,6 +19,7 @@ export default class SingleHearken extends BaseUtil {
     this.AudioCtx = Hearken.AudioCtx
 
     this.duration = null
+    this.whenPlayTime = 0
     // start time is a playing time, the forward time is not counted
     this.startTime = null
     this.playingTime = 0
@@ -98,36 +99,56 @@ export default class SingleHearken extends BaseUtil {
     }
   }
 
-  // if need fixDelay
+  // the delay time is counted in the total time, affected by rate 
+  // if the delay is 3, duration is 10, can play 7s
+  // so, should return 7s
   getDuration () {
-    const { duration, audioBuffer } = this
-    return duration
+    const { options, duration, audioBuffer } = this
+    const result = duration
       ? duration
       : audioBuffer
         ? audioBuffer.duration
         : null
+    
+    /*
+      if delay is 3s
+      complete duration is 10s
+      set play duration is 5s
+      will play 2s
+      and affected by rate
+    */
+    return result - options.delay * options.rate
   }
 
-  getCurrentTime (fixDelay) {
-    const { startTime, options, playingTime } = this
-    const timeChunk = startTime
-      ? Date.now() - startTime
-      : 0
-    let currentTime = (playingTime + timeChunk) / 1000
+  getCurrentTime () {
+    const duration = this.getDuration()
+    const { startTime, options, playingTime, whenPlayTime } = this
+    const timeChunk = startTime ? Date.now() - startTime : 0
 
-    currentTime = fixDelay
-      ? (currentTime - options.delay) * this.options.rate
-      : currentTime
+    // (a - b) * rate + whenplaytime
+    let currentTime = ((playingTime + timeChunk) / 1000 - options.delay) * options.rate + whenPlayTime
+
+    if (currentTime < 0) {
+      currentTime = 0
+    }
+
+    if(duration && currentTime > duration) {
+      currentTime = 0
+      // reset
+      this.startTime = Date.now()
+      this.playingTime = 0
+    }
 
     return currentTime
   }
 
   getPercent () {
-    const duration = this.getDuration(true)
+    let duration = this.getDuration()
     if (!duration) return null
 
     const currentTime = this.getCurrentTime(true)
     const percent = currentTime / duration
+
     return range(0, 1, percent)
   }
 
@@ -146,6 +167,7 @@ export default class SingleHearken extends BaseUtil {
       const bufferSource = nodes && nodes.bufferSource
 
       if (bufferSource) {
+        // https://github.com/WebAudio/web-audio-api/issues/723
         bufferSource.playbackRate.setValueAtTime(rate, AudioCtx.currentTime)
       }
     }
@@ -168,6 +190,18 @@ export default class SingleHearken extends BaseUtil {
 
         gainNode.gain.setValueAtTime(volume, AudioCtx.currentTime)
         this.dispatch('mute', mute)
+      }
+    }
+  }
+
+  setDelay (time) {
+    time = time || this.options.delay
+    if (isNumber(time)) {
+      this.options.delay = time
+      const delayNode = this.nodes && this.nodes.delay
+      if (delayNode) {
+        // the delayTime default is 0
+        delayNode.delayTime.setValueAtTime(time, this.AudioCtx.currentTime)
       }
     }
   }

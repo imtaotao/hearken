@@ -62,8 +62,8 @@ export default class Hearken extends Event {
   ready (cb) {
     if (typeof cb === 'function') {
       this.AudioCtx.state === 'running'
-        ? Promise.resolve().then(cb)
-        : this.AudioCtx.resume().then(cb)
+        ? Promise.resolve().then(() => cb(this))
+        : this.AudioCtx.resume().then(() => cb(this))
     }
   }
 }

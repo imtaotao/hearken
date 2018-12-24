@@ -1,11 +1,16 @@
 <template>
   <div>
+    media
     <input value="永夜" id="musicName"/>
     <button @click="this.play.bind(this)">播放</button>
     <button @click="this.pause.bind(this)">暂停</button>
     <button @click="this.start.bind(this)">开始</button>
     <button @click="this.stop.bind(this)">停止</button>
     <button @click="this.getMusic.bind(this)">getMusic</button>
+    <input id='progress' type='range' value=0 />
+    {{ currentTime }}
+    <br />
+    {{ duration }}
     <!-- <audio src="http://localhost:3000/getParticalMusic?name=永夜.mp3"></audio> -->
   </div>
 </template>
@@ -15,15 +20,23 @@
   import Hearken from '../src'
   import ajax, { get } from '../test/xhr'
 
-  const times = [5, 30]
+  const times = [0, 10]
   export default class Root extends Grass.Component {
     constructor () {
       super()
-      this.Hearken = new Hearken.Media({ loop: true })
+      this.Hearken = new Hearken.Media({
+        loop: true,
+        delay: 2,
+        rate: 1.5,
+      })
       this.stream = null
       this.index = 0
       window.h = this.Hearken
       window.getEffect = this.getEffect
+      this.createResponseState({
+        duration: null,
+        currentTime: 0,
+      })
     }
 
     play () {
@@ -69,6 +82,7 @@
       const stream = this.stream = new Hearken.Stream('audio/mpeg')
       window.s = this.stream
 
+      const node = document.getElementById('progress')
       const name = this.index % 2 === 0
         ? 'airplanes'
         : '盲点'
@@ -81,7 +95,16 @@
       })
 
       ajax.end = () => stream.end()
-      this.Hearken.start(stream, ...times).then(r => console.log(r))
+      this.Hearken.ready(h => {
+        h.start(stream, ...times).then(r => console.log(r))
+        setInterval(() => {
+          const duration = h.getDuration()
+          this.state.duration = duration
+          this.state.currentTime = h.getCurrentTime()
+          node.value = h.getPercent() * 100
+        }, 100)
+      })
+      
       this.Hearken.on('playError', e => console.log(e))
     }
   }

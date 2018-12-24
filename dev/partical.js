@@ -11,6 +11,7 @@ export default function Partical (props) {
 
   return (
     `<div>
+      分段
       <input value="永夜" id="musicName"/>
       <button @click="play">播放</button>
       <button @click="pause">暂停</button>
@@ -53,10 +54,8 @@ let instance
 
 window.h = h = new Hearken({
   loop: true,
-  filter: 'default',
-  hertz: 'default',
-  mime: 'audio/mpeg',
-  volume: 0.5,
+  // delay: 3,
+  volume: 0.1,
 })
 
 function toogle (h) {
@@ -67,10 +66,11 @@ function toogle (h) {
 
 function progress (instance) {
   if (time) return
+  console.log(instance.getDuration());
   time = setInterval(() => {
     const node = document.getElementById('one')
     node.value = instance.getPercent() * 100
-    // console.log(instance.getPercent());
+    console.log(instance.getPercent(), '---' ,instance.getCurrentTime(true))
   }, 20)
 }
 
@@ -98,7 +98,7 @@ function getMusic () {
       : instance = h.create(buffer)
 
     window.aa = instance
-    // instance.setRate(1.5)
+    instance.setRate(20)
     // instance.setDelay(3)
     // getEffect('irHall.ogg')
     instance.on('startBefore', () => {
@@ -107,7 +107,7 @@ function getMusic () {
     })
     
     h.ready(() => {
-      instance.fadeStart(3, 10, 10)
+      instance.start(240)
       progress(instance)
     })
   })

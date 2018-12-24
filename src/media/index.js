@@ -7,6 +7,7 @@ import {
   isNumber,
   filterOptions,
   createAudioContext,
+  range,
 } from '../share'
 
 export default class MediaElement extends BaseUtil {
@@ -15,6 +16,7 @@ export default class MediaElement extends BaseUtil {
     this.state = null
     this.endTimer = null
     this.duration = null
+    this.delayTimer = null
     this.startInfor = null
     this.audio = new Audio()
     this.options = filterOptions(options || {})
@@ -38,7 +40,7 @@ export default class MediaElement extends BaseUtil {
       if (isUndef(url)) return resolve(false)
 
       const { audio, getNomalTimeAndDuration } = this
-      const { time, duration } = getNomalTimeAndDuration(t, d)
+      let { time, duration } = getNomalTimeAndDuration(t, d)
 
       this.stop()
       this.resetContainer(audio)
@@ -46,7 +48,7 @@ export default class MediaElement extends BaseUtil {
 
       // if audio exists src, we need repeat use
       const sameExists = url => {
-        if (audio._url && audio._url === url) {
+        if (audio._src && audio._src === url) {
           startCoreFn(this, time, duration, resolve)
           return true
         }
@@ -58,7 +60,7 @@ export default class MediaElement extends BaseUtil {
           const stream = url
           stream.off('canPlay')
 
-          audio._url = stream
+          audio._src = stream
           audio.src = URL.createObjectURL(stream.mediaSource)
           // if can't play, we need await buffer loaded, then play
           stream.canPlay
@@ -68,7 +70,7 @@ export default class MediaElement extends BaseUtil {
       } else {
         if (!sameExists(url)) {
           audio.src = url
-          audio._url = url
+          audio._src = url
           startCoreFn(this, time, duration, resolve)
         }
       }
@@ -76,16 +78,22 @@ export default class MediaElement extends BaseUtil {
   }
 
   stop () {
-    const { state, audio, nodes, endTimer } = this
+    const { state, audio, nodes, endTimer, delayTimer } = this
     this.dispatch('stopBefore')
 
+    // if the audio is playing, need pause
     if (state === 'playing') audio.pause()
+    // disconnect nodes
     if (nodes) disconnectNodes(this)
+    // clear pre delay timer
+    if (delayTimer) clearTimeout(delayTimer)
+    // stop loop timer
     if (endTimer && endTimer.t) clearTimeout(endTimer.t)
 
     this.id = null
     this.state = null
     this.endTimer = null
+    this.delayTimer = null
     this.audio.currentTime = 0
     this.dispatch('stop')
   }
@@ -144,7 +152,50 @@ export default class MediaElement extends BaseUtil {
     return this.audio.currentTime
   }
 
-  getDuration () {}
+  // Delay time is not counted in the total time, affected by rate
+  // if duration is 10s, delay is 3s, rate is 1.5, return 15s
+  getDuration () {
+    const { audio, options, duration } = this
+
+    if (!audio._src) {
+      return null
+    }
+
+    let result = null
+
+    if (audio._src instanceof Stream) {
+      const stream = audio._src
+      const { mediaSource, sourceBuffer } = stream
+
+      // get complete
+      if (isFinite(mediaSource.duration)) {
+        result = isNumber(duration) && mediaSource.duration > duration
+          ? duration 
+          : mediaSource.duration
+      } else if (sourceBuffer) {
+        // if is a infinite, return loaded source duration
+        const timestampOffset = sourceBuffer.timestampOffset
+        result = isNumber(duration) && timestampOffset > duration
+          ? duration
+          : timestampOffset
+      }
+    } else {
+      result = isNumber(duration) && audio.duration > duration
+        ? duration
+        : audio.duration
+    }
+
+    return result && result * options.rate
+  }
+
+  getPercent () {
+    const duration = this.getDuration()
+    if (isUndef(duration) || !isFinite(duration)) {
+      return 0
+    }
+    const percent = this.audio.currentTime / duration
+    return range(0, 1, percent)
+  }
 
   setRate (rate) {
     if (rate !== this.options.rate) {
@@ -166,6 +217,18 @@ export default class MediaElement extends BaseUtil {
       options.mute = mute
       audio.muted = mute
       this.dispatch('mute', mute)
+    }
+  }
+
+  setCurrentTime (time) {
+    if (time === range(0, this.getDuration(), time)) {
+      this.audio.currentTime = time
+    }
+  }
+
+  setDelay (time) {
+    if (isNumber(time) && time !== this.options.delay) {
+      this.options.delay = time
     }
   }
 
@@ -211,7 +274,7 @@ export default class MediaElement extends BaseUtil {
   // we need check doucment event, allow play and check audioContext state
   ready (cb) {
     return this.AudioCtx.state === 'running'
-      ? Promise.resolve()
-      : this.AudioCtx.resume()
+      ? Promise.resolve().then(() => cb(this))
+      : this.AudioCtx.resume().then(() => cb(this))
   }
 }

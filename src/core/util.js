@@ -16,15 +16,23 @@ export function startCoreFn (Instance, time, duration) {
       : range(0, audioBuffer.duration, duration)
   }
 
+  if (time !== Instance.whenPlayTime) {
+    const duration = Instance.duration
+    Instance.whenPlayTime = duration
+      ? time > duration
+        ? duration
+        : time
+      : time
+  }
+
   Instance.dispatch('startBefore')
   Instance.resumeState()
   Instance.connectNodes()
 
   bufferSource.buffer = audioBuffer
-  bufferSource.loop = options.loop
   bufferSource.onended = e => {
     // if pass call stop method dispatch ended event, we need prevent
-    if (options.loop && !isUndef(duration) && !Instance.callStop) {
+    if (options.loop && !Instance.callStop) {
       Instance.startTime = null
       Instance.start(time, duration, true)
       return

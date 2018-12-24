@@ -57,20 +57,6 @@ export default class BaseUtil extends Event {
     return array
   }
 
-  // we need to be compatible with two different sets of delay time,
-  // so we use delayNode
-  setDelay (time) {
-    time = time || this.options.delay
-    if (isNumber(time)) {
-      this.options.delay = time
-      const delayNode = this.nodes && this.nodes.delay
-      if (delayNode) {
-        // the delayTime default is 0
-        delayNode.delayTime.setValueAtTime(time, this.AudioCtx.currentTime)
-      }
-    }
-  }
-
   setVolume (volume) {
     if (volume !== this.options.volume) {
       const { nodes, AudioCtx, options } = this
@@ -88,12 +74,12 @@ export default class BaseUtil extends Event {
   }
   
   resumeState () {
-    // setVolume、setMute、setRate should have a sub-class implementation
-    this.setVolume && this.setVolume()
+    // setMute、setRate、setDelay、setVolume should have a sub-class implementation
     this.setMute && this.setMute()
     this.setRate &&this.setRate()
+    this.setDelay &&this.setDelay()
+    this.setVolume && this.setVolume()
 
-    this.setDelay()
     this.panner.resumeState()
     this.convolver.resumeState()
 

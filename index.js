@@ -1,6 +1,6 @@
-// import Root from './dev/partical.js'
-import Root from './dev/media.grs'
 import Grass from '@rustle/grass'
-// import './test/component/root.grs'
+// import M from './dev/partical.js'
+// import M from './dev/voice-changer'
+import M from './dev/media.grs'
 
-Grass.mount(document.getElementById('root'), Root)
+Grass.mount(document.getElementById('root'), M)

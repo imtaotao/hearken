@@ -21,7 +21,7 @@ export default class Stream extends Event {
 
   get removed () {
     const buffers = this.mediaSource.sourceBuffers
-    !!~[].indexOf.call(buffers, this.sourceBuffer)
+    return !~[].indexOf.call(buffers, this.sourceBuffer)
   }
 
   init () {
@@ -71,11 +71,13 @@ export default class Stream extends Event {
           if (this.sourceBuffer.updating) {
             const fn = () => {
               this.mediaSource.endOfStream()
+              this.dispatch('end')
               this.sourceBuffer.removeEventListener('updateend', fn)
             }
             this.sourceBuffer.addEventListener('updateend', fn)
           } else {
             this.mediaSource.endOfStream()
+            this.dispatch('end')
           }
           this.queue.clean()
         }
