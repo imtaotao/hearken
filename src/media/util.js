@@ -85,3 +85,47 @@ export function delayPlay (Instance, cb) {
     cb()
   }
 }
+
+export function fadeStartOrPlay (Instance, type, time, url, t, d) {
+  if (isNumber(time)) {
+    return new Promise(resolve => {
+      const originVolume = Instance.options.volume
+      Instance.setVolume(0)
+      // if type is play, the params is invalid
+      Instance[type](url, t, d).then(result => {
+        const { nodes, AudioCtx } = Instance
+        const gainNode = nodes && nodes.gainNode
+        if (gainNode && result !== false) {
+          gainNode.gain.linearRampToValueAtTime(originVolume, AudioCtx.currentTime + time)
+          resolve(true)
+        } else {
+          resolve(false)
+        }
+        // restore volume value
+        Instance.options.volume = originVolume
+      })
+    })
+  } else {
+    return Instance[type]()
+  }
+}
+
+export function fadeStopOrPause (Instance, type, time) {
+  const fn = () => {
+    if (isNumber(time)) {
+      const { nodes, AudioCtx } = Instance
+      const gainNode = nodes && nodes.gainNode
+      if (gainNode) {
+        // a little ahead of the end
+        setTimeout(() => Instance[type](),  time * 990)
+        gainNode.gain.linearRampToValueAtTime(0, AudioCtx.currentTime + time)
+      }
+    } else {
+      Instance[type]()
+    }
+  }
+
+  type === 'stop'
+    ? fn()
+    : type === 'pause' && fn()
+}

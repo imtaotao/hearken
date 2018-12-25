@@ -69,8 +69,8 @@ function progress (instance) {
   console.log(instance.getDuration());
   time = setInterval(() => {
     const node = document.getElementById('one')
-    node.value = instance.getPercent() * 100
-    console.log(instance.getPercent(), '---' ,instance.getCurrentTime(true))
+    node.value = instance.getPercent(true) * 100
+    console.log(instance.getPercent(true), '---' ,instance.getCurrentTime(true))
   }, 20)
 }
 
@@ -98,8 +98,8 @@ function getMusic () {
       : instance = h.create(buffer)
 
     window.aa = instance
-    instance.setRate(20)
-    // instance.setDelay(3)
+    // instance.setRate(0)
+    instance.setDelay(3)
     // getEffect('irHall.ogg')
     instance.on('startBefore', () => {
       instance.resumeState()

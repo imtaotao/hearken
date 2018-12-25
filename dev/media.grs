@@ -96,7 +96,7 @@
 
       ajax.end = () => stream.end()
       this.Hearken.ready(h => {
-        h.start(stream, ...times).then(r => console.log(r))
+        h.fadeStart(3, stream, ...times).then(r => console.log(r))
         setInterval(() => {
           const duration = h.getDuration()
           this.state.duration = duration

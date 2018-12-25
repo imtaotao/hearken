@@ -54,6 +54,14 @@ export function createAudioContext (Constructor) {
   return Constructor.AudioContext
 }
 
+export function ready (Instance, cb) {
+  if (typeof cb === 'function') {
+    Instance.AudioCtx.state === 'running'
+      ? Promise.resolve().then(() => cb(Instance))
+      : Instance.AudioCtx.resume().then(() => cb(Instance))
+  }
+}
+
 export function filterOptions (options) {
   // boolean
   const loop = !!options.loop

@@ -102,7 +102,7 @@ export default class SingleHearken extends BaseUtil {
   // the delay time is counted in the total time, affected by rate 
   // if the delay is 3, duration is 10, can play 7s
   // so, should return 7s
-  getDuration () {
+  getDuration (needFix) {
     const { options, duration, audioBuffer } = this
     const result = duration
       ? duration
@@ -111,22 +111,32 @@ export default class SingleHearken extends BaseUtil {
         : null
     
     /*
-      if delay is 3s
+      if need fix
+      delay is 3s
       complete duration is 10s
       set play duration is 5s
       will play 2s
       and affected by rate
     */
-    return result - options.delay * options.rate
+    return needFix
+      ? result - options.delay * options.rate
+      : result
   }
 
-  getCurrentTime () {
+  getCurrentTime (needFix) {
     const duration = this.getDuration()
     const { startTime, options, playingTime, whenPlayTime } = this
     const timeChunk = startTime ? Date.now() - startTime : 0
 
-    // (a - b) * rate + whenplaytime
-    let currentTime = ((playingTime + timeChunk) / 1000 - options.delay) * options.rate + whenPlayTime
+    let currentTime
+
+    if (needFix) {
+      // (a - b) * rate + whenplaytime
+      currentTime = ((playingTime + timeChunk) / 1000 - options.delay) * options.rate + whenPlayTime
+    } else {
+      // a * rate + whenplaytime
+      currentTime = (playingTime + timeChunk) / 1000 * options.rate + whenPlayTime
+    }
 
     if (currentTime < 0) {
       currentTime = 0
@@ -142,11 +152,11 @@ export default class SingleHearken extends BaseUtil {
     return currentTime
   }
 
-  getPercent () {
-    let duration = this.getDuration()
+  getPercent (needFix) {
+    let duration = this.getDuration(needFix)
     if (!duration) return null
 
-    const currentTime = this.getCurrentTime(true)
+    const currentTime = this.getCurrentTime(needFix)
     const percent = currentTime / duration
 
     return range(0, 1, percent)

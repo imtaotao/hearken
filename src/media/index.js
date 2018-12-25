@@ -1,13 +1,14 @@
 import BaseUtil from '../base'
 import Stream from './stream'
-import { startCoreFn } from './util'
 import { disconnectNodes } from '../base/util'
+import { startCoreFn, fadeStartOrPlay, fadeStopOrPause } from './util'
 import {
+  range,
+  ready,
   isUndef,
   isNumber,
   filterOptions,
   createAudioContext,
-  range,
 } from '../share'
 
 export default class MediaElement extends BaseUtil {
@@ -24,7 +25,6 @@ export default class MediaElement extends BaseUtil {
 
     this.connectOrder = [
       'panner',
-      'delay',
       'gainNode',
       'convolver',
       'analyser',
@@ -131,15 +131,15 @@ export default class MediaElement extends BaseUtil {
       }
       this.state = 'pause'
       this.dispatch('pause')
-      return true
     }
-    return false
   }
 
-  restart () {
+  restart (fadeTime) {
     if (this.startInfor) {
       const { url, time, duration } = this.startInfor
-      return this.start(url, time, duration)
+      return isNumber(fadeTime)
+        ? this.fadeStart(fadeTime, url, time,  duration)
+        : this.start(url, time, duration)
     }
     return Promise.resolve(false)
   }
@@ -232,49 +232,23 @@ export default class MediaElement extends BaseUtil {
     }
   }
 
+  fadeStart (time, url, t, d) {
+    return fadeStartOrPlay(this, 'start', time, url, t, d)
+  }
+
   fadePlay (time) {
-    if (isNumber(time)) {
-      return new Promise(resolve => {
-        const originVolume = this.options.volume
-        this.setVolume(0)
-        this.play().then(result => {
-          const { nodes, AudioCtx } = this
-          const gainNode = nodes && nodes.gainNode
-          if (gainNode && result !== false) {
-            gainNode.gain.linearRampToValueAtTime(originVolume, AudioCtx.currentTime + time)
-            resolve(true)
-          } else {
-            resolve(false)
-          }
-          // restore volume value
-          this.options.volume = originVolume
-        })
-      })
-    } else {
-      return this.play()
-    }
+    return fadeStartOrPlay(this, 'play', time)
+  }
+
+  fadeStop (time) {
+    fadeStopOrPause(this, 'stop', time)
   }
 
   fadePause (time) {
-    if (this.state === 'playing') {
-      if (isNumber(time)) {
-        const { nodes, AudioCtx } = this
-        const gainNode = nodes && nodes.gainNode
-        if (gainNode) {
-          // a little ahead of the end
-          setTimeout(() => this.pause(),  time * 990)
-          gainNode.gain.linearRampToValueAtTime(0, AudioCtx.currentTime + time)
-        }
-      } else {
-        this.stop()
-      }
-    }
+    fadeStopOrPause(this, 'pause', time)
   }
 
-  // we need check doucment event, allow play and check audioContext state
   ready (cb) {
-    return this.AudioCtx.state === 'running'
-      ? Promise.resolve().then(() => cb(this))
-      : this.AudioCtx.resume().then(() => cb(this))
+    ready(this, cb)
   }
 }

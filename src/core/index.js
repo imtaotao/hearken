@@ -1,7 +1,7 @@
 import Event from '../event'
 import SingleHearken from './single'
 import { callChildMethod } from './util'
-import { filterOptions, createAudioContext } from '../share'
+import { ready, filterOptions, createAudioContext } from '../share'
 
 export default class Hearken extends Event {
   constructor (options) {
@@ -60,10 +60,6 @@ export default class Hearken extends Event {
 
   // this method will resume all sound, async call callback
   ready (cb) {
-    if (typeof cb === 'function') {
-      this.AudioCtx.state === 'running'
-        ? Promise.resolve().then(() => cb(this))
-        : this.AudioCtx.resume().then(() => cb(this))
-    }
+    ready(this, cb)
   }
 }
