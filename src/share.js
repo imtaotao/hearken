@@ -5,22 +5,36 @@ import {
   FFTSIZE,
 } from './default'
 
-export const isType = (v, type) => Object.prototype.toString.call(v) === `[object ${type}]`
+export const isType = (v, type) => {
+  return Object.prototype.toString.call(v) === `[object ${type}]`
+}
 
-export const isUndef = v => v === undefined || v === null
+export const isUndef = v => {
+  return v === undefined || v === null
+}
 
-export const isNumber = v => typeof v === 'number' && !isNaN(v)
+export const isNumber = v => {
+  return typeof v === 'number' && !isNaN(v)
+}
 
-export const isObject = v => v && typeof v === 'object'
+export const isObject = v => {
+  return v && typeof v === 'object'
+}
 
-export const isArrayBuffer = v => isType(v, 'ArrayBuffer')
+export const isArrayBuffer = v => {
+  return isType(v, 'ArrayBuffer')
+}
 
-export const isAudioBuffer = v => isType(v, 'AudioBuffer')
+export const isAudioBuffer = v => {
+  return isType(v, 'AudioBuffer')
+}
 
-export const range = (min, max, val) => Math.max(Math.min(val, max), min)
+export const range = (min, max, val) => {
+  return Math.max(Math.min(val, max), min)
+}
 
 export function random (max = 1000000, min = 0, fractionDigits = 0) {
-  return +(Math.random() * (max - min) + min).toFixed(fractionDigits)
+  return Number(Math.random() * (max - min) + min).toFixed(fractionDigits)
 }
 
 export function once (fn) {
