@@ -4,19 +4,28 @@ import {
   mallocFloat,
   createProcessingNode
 } from './util'
+import Event from '../event'
 
-export default class Pitch {
-  constructor (pitchShift, frameSize, channels) {
+export default class Pitch extends Event {
+  constructor (pitchShift, options) {
+    super()
     if (!pitchShift) {
       throw new Error('Missing "pitch-shift" library, see "https://www.npmjs.com/package/pitch-shift"')
     }
-    this.P = pitchShift
+
+    options.frameSize = options.frameSize || 2048
+
+    this.queue = []
     this.node = null
-    this.name = '_pitch'
     this.pitchValue = 1.0
-    this.channels = channels || 2
     this.cache = Object.create(null)
-    this.frameSize = frameSize || 2048
+    this.frameSize = options.frameSize
+    this.channels = options.channels || 2
+    this.S = pitchShift(
+      data => onData(this, data),
+      () => this.pitchValue,
+      options,
+    )
   }
 
   get value () {
@@ -25,36 +34,50 @@ export default class Pitch {
 
   set value (v) {
     this.pitchValue = v
+    this.dispatch('change', v)
   }
 
   connect (preNode) {
-    this.cache = Object.create(null)
+    this.clear()
     this.node = createProcessingNode(this, preNode.context, operationalBuffer)
     this.node.connect(preNode)
   }
 
-  clearCache () {
+  clear () {
+    this.queue = []
     this.cache = Object.create(null)
   }
-}
 
-function operationalBuffer (Pitch, input, output) {
-  const { channels, frameSize } = Pitch
-
-  if (channels === 1) {
-    transfer(input, output, 0, frameSize)
-  } else {
-    for (let i = 0; i < channels; i++) {
-      transfer(input, output, i, frameSize)
+  _process (inputData, outputData) {
+    this.S(inputData)
+    const resData = this.queue.shift()
+    if (resData) {
+      outputData.set(resData)
+      freeFloat(this.cache, resData)
     }
   }
 }
 
-function transfer (input, output, channel, frameSize) {
-  const inputData = input.getChannelData(channel)
-  const outputData = output.getChannelData(channel)
+function operationalBuffer (Pitch, input, output) {
+  const process = typeof Pitch.process === 'function'
+    ? Pitch.process
+    : Pitch._process
 
-  for (let i = 0; i < frameSize; i++) {
-    outputData[i] = inputData[i]
+  if (Pitch.channels === 1) {
+    const inputData = input.getChannelData(0)
+    const outputData = output.getChannelData(0)
+    process.call(Pitch, inputData, outputData)
+  } else {
+    for (let i = 0; i < Pitch.channels; i++) {
+      const inputData = input.getChannelData(i)
+      const outputData = output.getChannelData(i)
+      process.call(Pitch, inputData, outputData)
+    }
   }
+}
+
+function onData (Pitch, data) {
+  const buffer = mallocFloat(Pitch.cache, data.length)
+  buffer.set(data)
+  Pitch.queue.push(buffer)
 }

@@ -17,9 +17,10 @@
 
 <script>
   import Hearken from '../src'
-  import ajax, { get } from '../test/xhr'
+  import pitchShift from 'pitch-shift'
+  import ajax, { get } from '../demo/xhr'
 
-  const times = [0, 10]
+  const times = [5, 5]
   export default class Root extends Grass.Component {
     // #temp
     constructor () {
@@ -27,7 +28,7 @@
       this.Hearken = new Hearken.Media({
         loop: true,
         delay: 2,
-        rate: 1.5,
+        // rate: 1.5,
       })
       this.stream = null
       this.index = 0
@@ -37,6 +38,15 @@
         duration: null,
         currentTime: 0,
       })
+    }
+
+    beforeCreate () {
+      this.pitch = window.p = new Hearken.Pitch(pitchShift, {
+          frameSize: 2048,
+          hopSize: 512,
+          channel: 2
+        }
+      )
     }
 
     play () {
@@ -64,7 +74,6 @@
     }
 
     getEffect (name) {
-      console.log();
       get('http://localhost:3000/getMusic?name=convoler/' + name, buffer => {
         const instance = window.h
         if (instance) {
@@ -86,9 +95,9 @@
       const name = this.index % 2 === 0
         ? 'airplanes'
         : '盲点'
+      const url = 'http://localhost:3000/getParticalMusic?name=' + name
 
-      console.log(name);
-      ajax('http://localhost:3000/getParticalMusic?name=' + name, (err, { response }, fn) => {
+      ajax(url, (err, { response }, fn) => {
         if (err) throw err
         window.aa = response
         stream.awaitAppend(response).then(fn)
@@ -96,7 +105,12 @@
 
       ajax.end = () => stream.end()
       this.Hearken.ready(h => {
-        h.fadeStart(3, stream, ...times).then(r => console.log(r))
+        h.on('connect', ([node, connect]) => {
+          this.pitch.connect(node)
+          connect(this.pitch)
+        })
+    
+        h.fadeStart(3, './resource/毒苹果.mp3', ...times).then(r => console.log(r))
         setInterval(() => {
           const duration = h.getDuration()
           this.state.duration = duration
@@ -108,4 +122,6 @@
       this.Hearken.on('playError', e => console.log(e))
     }
   }
+
+  Root.$mount(window.root)
 </script>

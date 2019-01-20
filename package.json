@@ -5,7 +5,7 @@
   "scripts": {
     "i": "rm -rf node_modules && yarn",
     "dev": "cross-env NODE_ENV=development webpack-dev-server",
-    "server": "cross-env node test/server.js"
+    "server": "cross-env node demo/server.js"
   },
   "author": "taotao",
   "license": "ISC",

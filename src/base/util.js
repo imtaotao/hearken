@@ -1,4 +1,5 @@
 import { each } from '../share'
+import Pitch from '../pitch-shift'
 
 const mediaElementNodes = new WeakMap()
 
@@ -81,10 +82,14 @@ export function connect (Instance, cb) {
           }
         }
         // buffersouce mode, allow add pitchShift node
-        if (name === 'bufferSource') {
-          const next = pitchShift => {
-            if (pitchShift && pitchShift.node) {
-              preNode = pitchShift.node
+        if (name === 'bufferSource' || name === 'mediaSource') {
+          const next = toNode => {
+            if (toNode) {
+              if(toNode instanceof Pitch && toNode.node) {
+                preNode = toNode.node
+              } else {
+                preNode = toNode
+              }
             }
           }
           Instance.dispatch('connect', [preNode, next])
