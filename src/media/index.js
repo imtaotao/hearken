@@ -1,4 +1,4 @@
-import BaseUtil from '../base'
+import BasicSupport from '../base'
 import Stream from './stream'
 import { disconnectNodes } from '../base/util'
 import { startCoreFn, fadeStartOrPlay, fadeStopOrPause } from './util'
@@ -11,7 +11,7 @@ import {
   createAudioContext,
 } from '../share'
 
-export default class MediaElement extends BaseUtil {
+export default class MediaElement extends BasicSupport {
   constructor (options) {
     super()
     this.state = null

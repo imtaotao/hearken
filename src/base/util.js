@@ -80,6 +80,15 @@ export function connect (Instance, cb) {
             continue
           }
         }
+        // buffersouce mode, allow add pitchShift node
+        if (name === 'bufferSource') {
+          const next = pitchShift => {
+            if (pitchShift && pitchShift.node) {
+              preNode = pitchShift.node
+            }
+          }
+          Instance.dispatch('connect', [preNode, next])
+        }
         nodes[name].connect(preNode)
         preNode = nodes[name]
       }

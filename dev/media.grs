@@ -16,12 +16,12 @@
 </template>
 
 <script>
-  import Grass from '@rustle/grass'
   import Hearken from '../src'
   import ajax, { get } from '../test/xhr'
 
   const times = [0, 10]
   export default class Root extends Grass.Component {
+    // #temp
     constructor () {
       super()
       this.Hearken = new Hearken.Media({

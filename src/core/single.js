@@ -1,4 +1,4 @@
-import BaseUtil from '../base'
+import BasicSupport from '../base'
 import { startCoreFn, registerEvent } from './util'
 import {
   range,
@@ -8,7 +8,7 @@ import {
   isAudioBuffer,
 } from '../share'
 
-export default class SingleHearken extends BaseUtil {
+export default class SingleHearken extends BasicSupport {
   constructor (Hearken, buffer, options) {
     super()
     this.buffer = isArrayBuffer(buffer) ? buffer : null
@@ -46,8 +46,10 @@ export default class SingleHearken extends BaseUtil {
 
   start (t, d, noStop) {
     return new Promise(resolve => {
-      const { buffer, AudioCtx } = this
-      if (AudioCtx.state === 'suspended') {
+      if (!this.buffer && !this.audioBuffer) {
+        throw new Error('The resource must be of type arraybuffer or audiobuffer, can\'t play')
+      }
+      if (this.AudioCtx.state === 'suspended') {
         this.starting = false
         resolve(false)
         return
@@ -57,6 +59,7 @@ export default class SingleHearken extends BaseUtil {
 
       // we can't allow mutilple sound play, so, we need stop previous sound
       if (this.nodes && !noStop) {
+        console.log('stop');
         this.stop()
       }
 
@@ -69,7 +72,7 @@ export default class SingleHearken extends BaseUtil {
         return
       }
   
-      AudioCtx.decodeAudioData(buffer, audioBuffer => {
+      this.AudioCtx.decodeAudioData(this.buffer, audioBuffer => {
         this.buffer = null
         this.audioBuffer = audioBuffer
         startCoreFn(this, time, duration)
@@ -79,7 +82,7 @@ export default class SingleHearken extends BaseUtil {
   }
 
   stop () {
-    if (this.nodes) {
+    if (this.nodes && this.starting) {
       this.dispatch('stopBefore')
       const bufferSource = this.nodes.bufferSource
       const stopMusic = bufferSource.stop
@@ -286,8 +289,8 @@ export default class SingleHearken extends BaseUtil {
     }
   }
 
-  clone () {
-    const buffer = this.audioBuffer || this.buffer
+  clone (buffer) {
+    buffer = buffer || this.audioBuffer || this.buffer
     if (buffer) {
       const child = new SingleHearken(this.Hearken, buffer, this.options)
       this.Hearken.children.push(child)

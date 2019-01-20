@@ -27,7 +27,7 @@ module.exports = {
         },{
           loader: 'grass-loader',
           options: {
-            path: '@rustle/grass',
+            needGrass: true,
           },
         }]
       },

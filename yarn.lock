@@ -548,9 +548,10 @@
     lodash "^4.17.10"
     to-fast-properties "^2.0.0"
 
-"@rustle/grass@^0.0.1-alpha.1":
-  version "0.0.1-alpha.1"
-  resolved "http://registry.npm.taobao.org/@rustle/grass/download/@rustle/grass-0.0.1-alpha.1.tgz#f34b33fa684832d58e73acdf61414353319fb6c7"
+"@rustle/grass@^0.0.1-alpha.2":
+  version "0.0.1-alpha.2"
+  resolved "http://registry.npm.taobao.org/@rustle/grass/download/@rustle/grass-0.0.1-alpha.2.tgz#f44d1ea4e9b29131167c53db138d48c454afb067"
+  integrity sha1-9E0epOmykTEWfFPbE41IxFSvsGc=
 
 "@webassemblyjs/ast@1.7.11":
   version "1.7.11"
@@ -941,6 +942,11 @@ big.js@^3.1.3:
 binary-extensions@^1.0.0:
   version "1.12.0"
   resolved "http://registry.npm.taobao.org/binary-extensions/download/binary-extensions-1.12.0.tgz#c2d780f53d45bba8317a8902d4ceeaf3a6385b14"
+
+bit-twiddle@~0.0.2:
+  version "0.0.2"
+  resolved "http://registry.npm.taobao.org/bit-twiddle/download/bit-twiddle-0.0.2.tgz#c2eaebb952a3b94acc140497e1cdcd2f1a33f58e"
+  integrity sha1-wurruVKjuUrMFASX4c3NLxoz9Y4=
 
 bluebird@^3.5.1:
   version "3.5.3"
@@ -1452,6 +1458,13 @@ cssesc@^0.1.0:
   version "0.1.0"
   resolved "http://registry.npm.taobao.org/cssesc/download/cssesc-0.1.0.tgz#c814903e45623371a0477b40109aaafbeeaddbb4"
 
+cwise@~0.1.2:
+  version "0.1.2"
+  resolved "http://registry.npm.taobao.org/cwise/download/cwise-0.1.2.tgz#0d942d0fff4301b9c367ac0e55f0b945bec09e52"
+  integrity sha1-DZQtD/9DAbnDZ6wOVfC5Rb7AnlI=
+  dependencies:
+    falafel "~0.1.6"
+
 cyclist@~0.2.2:
   version "0.2.2"
   resolved "http://registry.npm.taobao.org/cyclist/download/cyclist-0.2.2.tgz#1b33792e11e914a2fd6d6ed6447464444e5fa640"
@@ -1576,6 +1589,17 @@ detect-node@^2.0.3:
   version "2.0.4"
   resolved "http://registry.npm.taobao.org/detect-node/download/detect-node-2.0.4.tgz#014ee8f8f669c5c58023da64b8179c083a28c46c"
 
+detect-pitch@~0.1.2:
+  version "0.1.2"
+  resolved "http://registry.npm.taobao.org/detect-pitch/download/detect-pitch-0.1.2.tgz#a0fbf1103351487ff7b85dc902ef09cc65a3fb4c"
+  integrity sha1-oPvxEDNRSH/3uF3JAu8JzGWj+0w=
+  dependencies:
+    bit-twiddle "~0.0.2"
+    ndarray "~0.2.4"
+    ndarray-fft "~0.0.2"
+    ndarray-ops "~0.1.3"
+    typedarray-pool "~0.1.1"
+
 diffie-hellman@^5.0.0:
   version "5.0.3"
   resolved "http://registry.npm.taobao.org/diffie-hellman/download/diffie-hellman-5.0.3.tgz#40e8ee98f55a2149607146921c63e1ae5f3d2875"
@@ -1644,6 +1668,11 @@ domutils@1.5.1:
   dependencies:
     dom-serializer "0"
     domelementtype "1"
+
+dup@~0.0.0:
+  version "0.0.0"
+  resolved "http://registry.npm.taobao.org/dup/download/dup-0.0.0.tgz#680c4c51ace6ab9fe3bc6e48d9cab26c0396abd7"
+  integrity sha1-aAxMUazmq5/jvG5I2cqybAOWq9c=
 
 duplexify@^3.4.2, duplexify@^3.6.0:
   version "3.6.1"
@@ -1738,6 +1767,11 @@ eslint-scope@^4.0.0:
   dependencies:
     esrecurse "^4.1.0"
     estraverse "^4.1.1"
+
+esprima@~1.0.2:
+  version "1.0.4"
+  resolved "http://registry.npm.taobao.org/esprima/download/esprima-1.0.4.tgz#9f557e08fc3b4d26ece9dd34f8fbf476b62585ad"
+  integrity sha1-n1V+CPw7TSbs6d00+Pv0drYlha0=
 
 esrecurse@^4.1.0:
   version "4.2.1"
@@ -1863,6 +1897,13 @@ extglob@^2.0.4:
     snapdragon "^0.8.1"
     to-regex "^3.0.1"
 
+falafel@~0.1.6:
+  version "0.1.6"
+  resolved "http://registry.npm.taobao.org/falafel/download/falafel-0.1.6.tgz#3084cf3d41b59d15c813be6f259557fdc82b0660"
+  integrity sha1-MITPPUG1nRXIE75vJZVX/cgrBmA=
+  dependencies:
+    esprima "~1.0.2"
+
 fast-deep-equal@^2.0.1:
   version "2.0.1"
   resolved "http://registry.npm.taobao.org/fast-deep-equal/download/fast-deep-equal-2.0.1.tgz#7b05218ddf9667bf7f370bf7fdb2cb15fdd0aa49"
@@ -1966,6 +2007,11 @@ fragment-cache@^0.2.1:
   resolved "http://registry.npm.taobao.org/fragment-cache/download/fragment-cache-0.2.1.tgz#4290fad27f13e89be7f33799c6bc5a0abfff0d19"
   dependencies:
     map-cache "^0.2.2"
+
+frame-hop@~0.0.0:
+  version "0.0.0"
+  resolved "http://registry.npm.taobao.org/frame-hop/download/frame-hop-0.0.0.tgz#a076037f4fd987c7d2c5ce17ebb03901551f6c87"
+  integrity sha1-oHYDf0/Zh8fSxc4X67A5AVUfbIc=
 
 fresh@0.5.2:
   version "0.5.2"
@@ -2077,9 +2123,10 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.2:
   version "4.1.15"
   resolved "http://registry.npm.taobao.org/graceful-fs/download/graceful-fs-4.1.15.tgz#ffb703e1066e8a0eeaa4c8b80ba9253eeefbfb00"
 
-grass-loader@^0.0.1:
-  version "0.0.1"
-  resolved "http://registry.npm.taobao.org/grass-loader/download/grass-loader-0.0.1.tgz#9bde750827be42cc71c6086537aeffd180c04cb9"
+grass-loader@^0.0.3:
+  version "0.0.3"
+  resolved "http://registry.npm.taobao.org/grass-loader/download/grass-loader-0.0.3.tgz#99212fc72dbd2c57b5c8c54c5873cd243753be42"
+  integrity sha1-mSEvxy29LFe1yMVMWHPNJDdTvkI=
   dependencies:
     loader-utils "*"
 
@@ -2876,6 +2923,30 @@ nanomatch@^1.2.9:
     snapdragon "^0.8.1"
     to-regex "^3.0.1"
 
+ndarray-fft@~0.0.2:
+  version "0.0.2"
+  resolved "http://registry.npm.taobao.org/ndarray-fft/download/ndarray-fft-0.0.2.tgz#820b9bc050ff12dc524f92e85a616a3c455acb8f"
+  integrity sha1-ggubwFD/EtxST5LoWmFqPEVay48=
+  dependencies:
+    bit-twiddle "~0.0.2"
+    cwise "~0.1.2"
+    ndarray "~0.2.0"
+    ndarray-ops "~0.1.3"
+    typedarray-pool "0.0.1"
+
+ndarray-ops@~0.1.3:
+  version "0.1.3"
+  resolved "http://registry.npm.taobao.org/ndarray-ops/download/ndarray-ops-0.1.3.tgz#d9271a035133d74d3227743814fcef38c3452882"
+  integrity sha1-2ScaA1Ez100yJ3Q4FPzvOMNFKII=
+  dependencies:
+    cwise "~0.1.2"
+    ndarray "~0.2.0"
+
+ndarray@~0.2.0, ndarray@~0.2.4:
+  version "0.2.4"
+  resolved "http://registry.npm.taobao.org/ndarray/download/ndarray-0.2.4.tgz#3ca49816bc9b10f5a2fa976d0f7628416ba72bf9"
+  integrity sha1-PKSYFrybEPWi+pdtD3YoQWunK/k=
+
 needle@^2.2.1:
   version "2.2.4"
   resolved "http://registry.npm.taobao.org/needle/download/needle-2.2.4.tgz#51931bff82533b1928b7d1d69e01f1b00ffd2a4e"
@@ -3098,6 +3169,11 @@ osenv@^0.1.4:
     os-homedir "^1.0.0"
     os-tmpdir "^1.0.0"
 
+overlap-add@~0.0.0:
+  version "0.0.0"
+  resolved "http://registry.npm.taobao.org/overlap-add/download/overlap-add-0.0.0.tgz#271ce561ea895888d25f18e813b54f8b294a07cc"
+  integrity sha1-JxzlYeqJWIjSXxjoE7VPiylKB8w=
+
 p-defer@^1.0.0:
   version "1.0.0"
   resolved "http://registry.npm.taobao.org/p-defer/download/p-defer-1.0.0.tgz#9f6eb182f6c9aa8cd743004a7d4f96b196b0fb0c"
@@ -3241,6 +3317,16 @@ pinkie-promise@^2.0.0:
 pinkie@^2.0.0:
   version "2.0.4"
   resolved "http://registry.npm.taobao.org/pinkie/download/pinkie-2.0.4.tgz#72556b80cfa0d48a974e80e77248e80ed4f7f870"
+
+pitch-shift@^0.0.0:
+  version "0.0.0"
+  resolved "http://registry.npm.taobao.org/pitch-shift/download/pitch-shift-0.0.0.tgz#d457e490ad0dcc2bd0d48fa78d03001f252b911a"
+  integrity sha1-1FfkkK0NzCvQ1I+njQMAHyUrkRo=
+  dependencies:
+    detect-pitch "~0.1.2"
+    frame-hop "~0.0.0"
+    overlap-add "~0.0.0"
+    typedarray-pool "~0.1.1"
 
 pkg-dir@^2.0.0:
   version "2.0.0"
@@ -4089,6 +4175,22 @@ type-is@~1.6.16:
   dependencies:
     media-typer "0.3.0"
     mime-types "~2.1.18"
+
+typedarray-pool@0.0.1:
+  version "0.0.1"
+  resolved "http://registry.npm.taobao.org/typedarray-pool/download/typedarray-pool-0.0.1.tgz#1491e1575a325a2a25108ff048ae7fc47074386b"
+  integrity sha1-FJHhV1oyWiolEI/wSK5/xHB0OGs=
+  dependencies:
+    bit-twiddle "~0.0.2"
+    dup "~0.0.0"
+
+typedarray-pool@~0.1.1:
+  version "0.1.2"
+  resolved "http://registry.npm.taobao.org/typedarray-pool/download/typedarray-pool-0.1.2.tgz#c01a4a95d35f05f990f53456b63ff698557d928f"
+  integrity sha1-wBpKldNfBfmQ9TRWtj/2mFV9ko8=
+  dependencies:
+    bit-twiddle "~0.0.2"
+    dup "~0.0.0"
 
 typedarray@^0.0.6:
   version "0.0.6"

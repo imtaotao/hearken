@@ -14,9 +14,6 @@ export default class Hearken extends Event {
   create (buffer, options = {}) {
     Object.setPrototypeOf(options, this.options)
     const child = new SingleHearken(this, buffer, options)
-    if (!child.buffer && !child.audioBuffer) {
-      throw new Error('The resource must be of type arraybuffer or audiobuffer')
-    }
     this.children.push(child)
     return child
   }

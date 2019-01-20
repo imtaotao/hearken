@@ -1,0 +1,52 @@
+<template>
+  <div>
+    <style>
+      button { display: block; }
+    </style>
+    <button @click='play'>播放</button>
+    <button @click='pause'>暂停</button>
+  </div>
+</template>
+
+<script>
+  import Hearken from '../src'
+  import pitchShift from 'pitch-shift'
+  import ajax, { get } from '../test/xhr'
+
+  let buffer
+  const hearken = new Hearken()
+  const manager = hearken.create()
+  const pitch = new Hearken.Pitch(pitchShift)
+
+  function Root (props) {
+    props.play = play
+    props.pause = () => manager.stop()
+    return // #temp string
+  }
+
+  function getMusic (name) {
+    return new Promise(resolve => {
+      get('http://localhost:3000/getMusic?name=' + name, resolve)
+    })
+  }
+
+  function play (e) {
+    if (!buffer) {
+      getMusic('毒苹果').then(buffer => {
+        buffer = buffer
+        manager.replaceBuffer(buffer)
+        manager.fadeStart()
+      })
+    } else {
+      manager.start()
+    }
+  }
+
+  manager.on('connect', ([node, connect]) => {
+    pitch.connect(node)
+    connect(pitch)
+  })
+
+  Grass.mount(root, Root)
+  window.m = manager
+</script>

@@ -6,7 +6,7 @@ import { isNumber } from '../share'
 import SingleHearken from '../core/single'
 import { connect, createNodes } from './util'
 
-export default class BaseUtil extends Event {
+export default class BasicSupport extends Event {
   constructor () {
     super()
     this.nodes = null
