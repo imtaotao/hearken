@@ -28,7 +28,7 @@
       this.Hearken = new Hearken.Media({
         loop: true,
         delay: 2,
-        // rate: 1.5,
+        rate: 1.5,
       })
       this.stream = null
       this.index = 0
@@ -42,11 +42,10 @@
 
     beforeCreate () {
       this.pitch = window.p = new Hearken.Pitch(pitchShift, {
-          frameSize: 2048,
-          hopSize: 512,
-          channel: 2
-        }
-      )
+        frameSize: 2048,
+        hopSize: 512,
+        channel: 2
+      })
     }
 
     play () {

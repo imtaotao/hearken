@@ -155,7 +155,7 @@ export default class MediaElement extends BasicSupport {
   // Delay time is not counted in the total time, affected by rate
   // if duration is 10s, delay is 3s, rate is 1.5, return 15s
   getDuration () {
-    const { audio, options, duration } = this
+    const { audio, options, duration, startInfor } = this
 
     if (!audio._src) {
       return null
@@ -184,8 +184,17 @@ export default class MediaElement extends BasicSupport {
         ? duration
         : audio.duration
     }
+    
+    result && (result *= options.rate)
 
-    return result && result * options.rate
+    // add forward time
+    if (startInfor && startInfor.time) {
+      result = result
+        ? result + startInfor.time
+        : startInfor.time
+    }
+
+    return result
   }
 
   getPercent () {
