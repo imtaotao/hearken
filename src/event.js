@@ -1,6 +1,6 @@
 export default class Event {
   constructor() {
-    this.listener = {}
+    this._listener = Object.create(null)
   }
 
   on (event, fn) {
@@ -22,18 +22,18 @@ export default class Event {
   }
 
   off (event, fn) {
-    if (this.listener[event]) {
+    if (this._listener[event]) {
       if (typeof fn === 'function') {
         const remove = name => {
-          const array = this.listener[event][name]
+          const array = this._listener[event][name]
           const index = array.indexOf(fn)
           ~index && array.splice(index, 1)
         }
         remove('once')
         remove('normal')
       } else {
-        this.listener[event].once = []
-        this.listener[event].normal = []
+        this._listener[event].once = []
+        this._listener[event].normal = []
       }
       return true
     }
@@ -41,14 +41,14 @@ export default class Event {
   }
 
   offAll () {
-    this.listener = {}
+    this._listener = Object.create(null)
   }
 
   dispatch (event, data) {
-    if (this.listener[event]) {
-      this.listener[event].once.forEach(each => each.call(null, data))
-      this.listener[event].once = []
-      this.listener[event].normal.forEach(each => each.call(null, data))
+    if (this._listener[event]) {
+      this._listener[event].once.forEach(fn => fn(data))
+      this._listener[event].once = []
+      this._listener[event].normal.forEach(fn => fn(data))
       return true
     }
     return false
@@ -56,11 +56,11 @@ export default class Event {
 }
 
 function getEventFnQueue (Event_, event) {
-  if (!Event_.listener[event]) {
-    Event_.listener[event] = {
+  if (!Event_._listener[event]) {
+    Event_._listener[event] = {
       normal: [],
       once: [],
     }
   }
-  return Event_.listener[event]
+  return Event_._listener[event]
 }
