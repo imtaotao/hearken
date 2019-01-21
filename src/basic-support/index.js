@@ -28,13 +28,11 @@ export default class BasicSupport extends Event {
   }
 
   getNomalTimeAndDuration (time, duration) {
-    time = isNumber(time)
-      ? time > 0
-        ? time
-        : 0
-      : 0
+    if (!isNumber(time) || time < 0) {
+      time = 0
+    }
     
-    // duration is must be a "undefined"
+    // if duration is not number, duration must be a "undefined"
     duration = isNumber(duration)
       ? duration > 0 
         ? duration
