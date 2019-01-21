@@ -57,12 +57,12 @@ export default class Pitch extends Event {
     this.cache = Object.create(null)
   }
 
-  _process (inputData, outputData) {
+  _process (inputData, outputData, isInsertPitch) {
     this.shiftBuffer(inputData)
     const resData = this.queue.shift()
     if (resData) {
       outputData.set(resData)
-      freeFloat(this.cache, resData)
+      isInsertPitch && freeFloat(this.cache, resData)
     }
   }
 }
@@ -72,16 +72,10 @@ function operationalBuffer (Pitch, input, output) {
     ? Pitch.process
     : Pitch._process
 
-  if (Pitch.channels === 1) {
-    const inputData = input.getChannelData(0)
-    const outputData = output.getChannelData(0)
-    process.call(Pitch, inputData, outputData)
-  } else {
-    for (let i = 0; i < Pitch.channels; i++) {
-      const inputData = input.getChannelData(i)
-      const outputData = output.getChannelData(i)
-      process.call(Pitch, inputData, outputData)
-    }
+  for (let i = 0; i < Pitch.channels; i++) {
+    const inputData = input.getChannelData(i)
+    const outputData = output.getChannelData(i)
+    process.call(Pitch, inputData, outputData, true)
   }
 }
 

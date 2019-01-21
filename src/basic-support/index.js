@@ -74,8 +74,8 @@ export default class BasicSupport extends Event {
   resumeState () {
     // setMute、setRate、setDelay、setVolume should have a sub-class implementation
     this.setMute && this.setMute()
-    this.setRate &&this.setRate()
-    this.setDelay &&this.setDelay()
+    this.setRate && this.setRate()
+    this.setDelay && this.setDelay()
     this.setVolume && this.setVolume()
 
     this.panner.resumeState()

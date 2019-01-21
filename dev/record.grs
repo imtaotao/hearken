@@ -1,0 +1,50 @@
+<template>
+  <div className='container'>
+    <style>
+      .container {
+        display: border-box;
+        width: 600px;
+        height: 300px;
+        margin:0 auto;
+        border-radius: 3px;
+        background: #dff7f4;
+        padding: 10px 0 0 10px;
+      }
+      .button {
+        display: inline-block;
+        width: 80px;
+        height: 30px;
+        color: #fff;
+        cursor: pointer;
+        margin: 0 10px 10px 0;
+        line-height: 30px;
+        text-align: center;
+        border-radius: 3px;
+        background: #61b967;
+      }
+    </style>
+    <div :style='{ marginBottom: "10px" }'>Record sound demo</div>
+    <div>
+      <span className='button' @click='start'>record</span>
+      <span className='button' @click='stop'>stop</span>
+    </div>
+  </div>
+</template>
+
+<script>
+  import Hearken from '../src'
+
+  const r = window.r = Grass.mount(window.root, function CM (props) {
+    props.start = start
+    props.stop = stop
+    return // #temp string
+  })
+
+  function start () {
+
+  }
+
+  function stop () {
+  }
+  
+</script>

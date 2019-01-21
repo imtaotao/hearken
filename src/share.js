@@ -68,6 +68,14 @@ export function createAudioContext (Constructor) {
   return Constructor.AudioCtx
 }
 
+export function inlineWorker (fn) {
+  const fnBody = fn.toString().trim().match(/^function\s*\w*\s*\([\w\s,]*\)\s*{([\w\W]*?)}$/)[1]
+  const url = window.URL.createObjectURL(new window.Blob([fnBody], {
+    type: 'text/javascript',
+  }))
+  return new window.Worker(url)
+}
+
 export function ready (Instance, cb) {
   if (typeof cb === 'function') {
     Instance.AudioCtx.state === 'running'
