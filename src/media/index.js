@@ -1,7 +1,11 @@
-import BasicSupport from '../base'
 import Stream from './stream'
+import BasicSupport from '../base'
 import { disconnectNodes } from '../base/util'
-import { startCoreFn, fadeStartOrPlay, fadeStopOrPause } from './util'
+import {
+  startCoreFn,
+  fadeStartOrPlay,
+  fadeStopOrPause,
+} from './util'
 import {
   range,
   ready,
@@ -32,6 +36,137 @@ export default class MediaElement extends BasicSupport {
       'filterNode',
       'mediaSource',
     ]
+  }
+
+  ready (cb) {
+    ready(this, cb)
+  }
+
+  playing () {
+    return this.state === 'playing'
+  }
+
+  fadeStart (time, url, t, d) {
+    return fadeStartOrPlay(this, 'start', time, url, t, d)
+  }
+
+  fadePlay (time) {
+    return fadeStartOrPlay(this, 'play', time)
+  }
+
+  fadeStop (time) {
+    fadeStopOrPause(this, 'stop', time)
+  }
+
+  fadePause (time) {
+    fadeStopOrPause(this, 'pause', time)
+  }
+
+  clone () {
+    return new MediaElement(this.options)
+  }
+
+  restart (fadeTime) {
+    if (this.startInfor) {
+      const { url, time, duration } = this.startInfor
+      return isNumber(fadeTime)
+        ? this.fadeStart(fadeTime, url, time,  duration)
+        : this.start(url, time, duration)
+    }
+    return Promise.resolve(false)
+  }
+
+  setRate (rate) {
+    if (rate !== this.options.rate) {
+      const { audio, options } = this
+      rate = isNumber(rate) ? rate : options.rate
+      options.rate = rate
+
+      if (this.nodes) {
+        audio.playbackRate = rate
+      }
+    }
+  }
+
+  setMute (isMute) {
+    if (isMute !== this.options.mute) {
+      const { audio, options } = this
+      const mute = isUndef(isMute) ? options.mute : !!isMute
+
+      options.mute = mute
+      audio.muted = mute
+      this.dispatch('mute', mute)
+    }
+  }
+
+  setCurrentTime (time) {
+    if (time === range(0, this.getDuration(), time)) {
+      this.audio.currentTime = time
+    }
+  }
+
+  setDelay (time) {
+    if (isNumber(time) && time !== this.options.delay) {
+      this.options.delay = time
+    }
+  }
+
+  getCurrentTime () {
+    return this.audio.currentTime
+  }
+
+  getPercent () {
+    const duration = this.getDuration()
+    if (isUndef(duration) || !isFinite(duration)) {
+      return 0
+    }
+    const percent = this.audio.currentTime / duration
+    return range(0, 1, percent)
+  }
+
+  // Delay time is not counted in the total time, affected by rate
+  // if duration is 10s, delay is 3s, rate is 1.5, return 15s
+  getDuration () {
+    const { audio, options, duration, startInfor } = this
+
+    if (!audio._src) {
+      return null
+    }
+
+    let result = null
+
+    if (audio._src instanceof Stream) {
+      const stream = audio._src
+      const { mediaSource, sourceBuffer } = stream
+
+      // get complete
+      if (isFinite(mediaSource.duration)) {
+        result = isNumber(duration) && mediaSource.duration > duration
+          ? duration 
+          : mediaSource.duration
+      } else if (sourceBuffer) {
+        // if is a infinite, return loaded source duration
+        const timestampOffset = sourceBuffer.timestampOffset
+        result = isNumber(duration) && timestampOffset > duration
+          ? duration
+          : timestampOffset
+      }
+    } else {
+      result = isNumber(duration) && audio.duration > duration
+        ? duration
+        : audio.duration
+    }
+    
+    result && (result *= options.rate)
+
+    // add forward time
+    if (startInfor && startInfor.time) {
+      result = result
+        ? result + startInfor.time
+        : startInfor.time
+    }
+
+    return result
   }
 
   // return promise, if can't auto play, throw reject error
@@ -132,132 +267,5 @@ export default class MediaElement extends BasicSupport {
       this.state = 'pause'
       this.dispatch('pause')
     }
-  }
-
-  restart (fadeTime) {
-    if (this.startInfor) {
-      const { url, time, duration } = this.startInfor
-      return isNumber(fadeTime)
-        ? this.fadeStart(fadeTime, url, time,  duration)
-        : this.start(url, time, duration)
-    }
-    return Promise.resolve(false)
-  }
-
-  playing () {
-    return this.state === 'playing'
-  }
-
-  getCurrentTime () {
-    return this.audio.currentTime
-  }
-
-  // Delay time is not counted in the total time, affected by rate
-  // if duration is 10s, delay is 3s, rate is 1.5, return 15s
-  getDuration () {
-    const { audio, options, duration, startInfor } = this
-
-    if (!audio._src) {
-      return null
-    }
-
-    let result = null
-
-    if (audio._src instanceof Stream) {
-      const stream = audio._src
-      const { mediaSource, sourceBuffer } = stream
-
-      // get complete
-      if (isFinite(mediaSource.duration)) {
-        result = isNumber(duration) && mediaSource.duration > duration
-          ? duration 
-          : mediaSource.duration
-      } else if (sourceBuffer) {
-        // if is a infinite, return loaded source duration
-        const timestampOffset = sourceBuffer.timestampOffset
-        result = isNumber(duration) && timestampOffset > duration
-          ? duration
-          : timestampOffset
-      }
-    } else {
-      result = isNumber(duration) && audio.duration > duration
-        ? duration
-        : audio.duration
-    }
-    
-    result && (result *= options.rate)
-
-    // add forward time
-    if (startInfor && startInfor.time) {
-      result = result
-        ? result + startInfor.time
-        : startInfor.time
-    }
-
-    return result
-  }
-
-  getPercent () {
-    const duration = this.getDuration()
-    if (isUndef(duration) || !isFinite(duration)) {
-      return 0
-    }
-    const percent = this.audio.currentTime / duration
-    return range(0, 1, percent)
-  }
-
-  setRate (rate) {
-    if (rate !== this.options.rate) {
-      const { audio, options } = this
-      rate = isNumber(rate) ? rate : options.rate
-      options.rate = rate
-
-      if (this.nodes) {
-        audio.playbackRate = rate
-      }
-    }
-  }
-
-  setMute (isMute) {
-    if (isMute !== this.options.mute) {
-      const { audio, options } = this
-      const mute = isUndef(isMute) ? options.mute : !!isMute
-
-      options.mute = mute
-      audio.muted = mute
-      this.dispatch('mute', mute)
-    }
-  }
-
-  setCurrentTime (time) {
-    if (time === range(0, this.getDuration(), time)) {
-      this.audio.currentTime = time
-    }
-  }
-
-  setDelay (time) {
-    if (isNumber(time) && time !== this.options.delay) {
-      this.options.delay = time
-    }
-  }
-
-  fadeStart (time, url, t, d) {
-    return fadeStartOrPlay(this, 'start', time, url, t, d)
-  }
-
-  fadePlay (time) {
-    return fadeStartOrPlay(this, 'play', time)
-  }
-
-  fadeStop (time) {
-    fadeStopOrPause(this, 'stop', time)
-  }
-
-  fadePause (time) {
-    fadeStopOrPause(this, 'pause', time)
-  }
-
-  ready (cb) {
-    ready(this, cb)
   }
 }

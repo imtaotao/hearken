@@ -86,6 +86,7 @@
     }
 
     getMusic () {
+      this.stop()
       this.index++
       const stream = this.stream = new Hearken.Stream('audio/mpeg')
       window.s = this.stream
@@ -108,8 +109,8 @@
           this.pitch.connect(node)
           connect(this.pitch)
         })
-    
-        h.fadeStart(3, './resource/毒苹果.mp3', ...times).then(r => console.log(r))
+        // './resource/毒苹果.mp3'
+        h.start(stream, ...times).then(r => console.log(r))
         setInterval(() => {
           const duration = h.getDuration()
           this.state.duration = duration

@@ -44,64 +44,6 @@ export default class SingleHearken extends BasicSupport {
     ]
   }
 
-  start (t, d, noStop) {
-    return new Promise(resolve => {
-      if (!this.buffer && !this.audioBuffer) {
-        throw new Error('The resource must be of type arraybuffer or audiobuffer, can\'t play')
-      }
-      if (this.AudioCtx.state === 'suspended') {
-        this.starting = false
-        resolve(false)
-        return
-      }
-
-      const { time, duration } = this.getNomalTimeAndDuration(t, d)
-
-      // we can't allow mutilple sound play, so, we need stop previous sound
-      if (this.nodes && !noStop) {
-        console.log('stop');
-        this.stop()
-      }
-
-      this.resetContainer()
-      this.callStop = false
-
-      if (this.audioBuffer) {
-        startCoreFn(this, time, duration)
-        resolve(true)
-        return
-      }
-  
-      this.AudioCtx.decodeAudioData(this.buffer, audioBuffer => {
-        this.buffer = null
-        this.audioBuffer = audioBuffer
-        startCoreFn(this, time, duration)
-        resolve(true)
-      })
-    })
-  }
-
-  stop () {
-    if (this.nodes && this.starting) {
-      this.dispatch('stopBefore')
-      const bufferSource = this.nodes.bufferSource
-      const stopMusic = bufferSource.stop
-        ? bufferSource.stop
-        : bufferSource.noteOff
-
-      bufferSource.onended = null
-      stopMusic.call(bufferSource)
-      
-      this.nodes = null
-      this.startTime = null
-      this.playingTime = 0
-      this.starting = false
-      this.callStop = true
-      this.filter.filterNodes = Object.create(null)
-      this.dispatch('stop')
-    }
-  }
-
   // the delay time is counted in the total time, affected by rate 
   // if the delay is 3, duration is 10, can play 7s
   // so, should return 7s
@@ -291,12 +233,66 @@ export default class SingleHearken extends BasicSupport {
 
   clone (buffer) {
     buffer = buffer || this.audioBuffer || this.buffer
-    if (buffer) {
-      const child = new SingleHearken(this.Hearken, buffer, this.options)
-      this.Hearken.children.push(child)
-      return child
-    } else {
-      throw new Error('can\'t clone this instance, because audiobuffer and buffer is null')
+    const child = new SingleHearken(this.Hearken, buffer, this.options)
+    this.Hearken.children.push(child)
+    return child
+  }
+
+  start (t, d, noStop) {
+    return new Promise(resolve => {
+      if (!this.buffer && !this.audioBuffer) {
+        throw new Error('The resource must be of type arraybuffer or audiobuffer, can\'t play')
+      }
+      if (this.AudioCtx.state === 'suspended') {
+        this.starting = false
+        resolve(false)
+        return
+      }
+
+      const { time, duration } = this.getNomalTimeAndDuration(t, d)
+
+      // we can't allow mutilple sound play, so, we need stop previous sound
+      if (this.nodes && !noStop) {
+        console.log('stop');
+        this.stop()
+      }
+
+      this.resetContainer()
+      this.callStop = false
+
+      if (this.audioBuffer) {
+        startCoreFn(this, time, duration)
+        resolve(true)
+        return
+      }
+  
+      this.AudioCtx.decodeAudioData(this.buffer, audioBuffer => {
+        this.buffer = null
+        this.audioBuffer = audioBuffer
+        startCoreFn(this, time, duration)
+        resolve(true)
+      })
+    })
+  }
+
+  stop () {
+    if (this.nodes && this.starting) {
+      this.dispatch('stopBefore')
+      const bufferSource = this.nodes.bufferSource
+      const stopMusic = bufferSource.stop
+        ? bufferSource.stop
+        : bufferSource.noteOff
+
+      bufferSource.onended = null
+      stopMusic.call(bufferSource)
+      
+      this.nodes = null
+      this.startTime = null
+      this.playingTime = 0
+      this.starting = false
+      this.callStop = true
+      this.filter.filterNodes = Object.create(null)
+      this.dispatch('stop')
     }
   }
 }

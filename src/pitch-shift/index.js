@@ -21,7 +21,7 @@ export default class Pitch extends Event {
     this.cache = Object.create(null)
     this.frameSize = options.frameSize
     this.channels = options.channels || 2
-    this.S = pitchShift(
+    this.shiftBuffer = pitchShift(
       data => onData(this, data),
       () => this.pitchValue,
       options,
@@ -39,8 +39,17 @@ export default class Pitch extends Event {
 
   connect (preNode) {
     this.clear()
-    this.node = createProcessingNode(this, preNode.context, operationalBuffer)
+    this.disconnect()
+    this.createNode(preNode.context)
     this.node.connect(preNode)
+  }
+
+  disconnect () {
+    this.node && this.node.disconnect()
+  }
+
+  createNode (AudioCtx) {
+    this.node = createProcessingNode(this, AudioCtx, operationalBuffer)
   }
 
   clear () {
@@ -49,7 +58,7 @@ export default class Pitch extends Event {
   }
 
   _process (inputData, outputData) {
-    this.S(inputData)
+    this.shiftBuffer(inputData)
     const resData = this.queue.shift()
     if (resData) {
       outputData.set(resData)

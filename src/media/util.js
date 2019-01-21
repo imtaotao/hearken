@@ -61,8 +61,8 @@ export function startCoreFn (Instance, time, duration, cb) {
 
     const error = err => {
       // can't auto play
-      Instance.dispatch('playerror', err)
       typeof cb === 'function' && cb(false)
+      Instance.dispatch('playerror', err)
       // we don't need throw error
       return err
     }
@@ -86,6 +86,7 @@ export function delayPlay (Instance, cb) {
   }
 }
 
+// type should be a "start" or "stop"
 export function fadeStartOrPlay (Instance, type, time, url, t, d) {
   if (isNumber(time)) {
     return new Promise(resolve => {
@@ -110,22 +111,17 @@ export function fadeStartOrPlay (Instance, type, time, url, t, d) {
   }
 }
 
+// type should be a "stop" or "pause"
 export function fadeStopOrPause (Instance, type, time) {
-  const fn = () => {
-    if (isNumber(time)) {
-      const { nodes, AudioCtx } = Instance
-      const gainNode = nodes && nodes.gainNode
-      if (gainNode) {
-        // a little ahead of the end
-        setTimeout(() => Instance[type](),  time * 990)
-        gainNode.gain.linearRampToValueAtTime(0, AudioCtx.currentTime + time)
-      }
-    } else {
-      Instance[type]()
+  if (isNumber(time)) {
+    const { nodes, AudioCtx } = Instance
+    const gainNode = nodes && nodes.gainNode
+    if (gainNode) {
+      // a little ahead of the end
+      setTimeout(() => Instance[type](),  time * 990)
+      gainNode.gain.linearRampToValueAtTime(0, AudioCtx.currentTime + time)
     }
+  } else {
+    Instance[type]()
   }
-
-  type === 'stop'
-    ? fn()
-    : type === 'pause' && fn()
 }
