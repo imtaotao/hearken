@@ -10,12 +10,12 @@ export function createProcessingNode (Pitch, AudioCtx, fn) {
   return scriptNode
 }
 
-export function mallocFloat (FLOAT, n) {
-  const key = Math.floor(Math.log2(n))
+export function mallocFloat (FLOAT, l) {
+  const key = Math.floor(Math.log2(l))
   const cache = FLOAT[key]
   return cache && cache.length > 0
     ? cache.pop()
-    : new Float32Array(n)
+    : new Float32Array(l)
 }
 
 export function freeFloat (FLOAT, array) {

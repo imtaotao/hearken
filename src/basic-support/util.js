@@ -81,7 +81,7 @@ export function connect (Instance, cb) {
             continue
           }
         }
-        // buffersouce mode, allow add pitchShift node
+        // allow add pitchShift node
         if (name === 'bufferSource' || name === 'mediaSource') {
           const next = toNode => {
             if (toNode) {

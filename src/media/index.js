@@ -1,6 +1,6 @@
 import Stream from './stream'
-import BasicSupport from '../base'
-import { disconnectNodes } from '../base/util'
+import BasicSupport from '../basic-support'
+import { disconnectNodes } from '../basic-support/util'
 import {
   startCoreFn,
   fadeStartOrPlay,

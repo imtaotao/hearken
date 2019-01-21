@@ -1,4 +1,4 @@
-import BasicSupport from '../base'
+import BasicSupport from '../basic-support'
 import { startCoreFn, registerEvent } from './util'
 import {
   range,
