@@ -96,7 +96,7 @@
 
       // instance.setRate(0)
       // instance.setDelay(3)
-      // getEffect('irHall.ogg')
+      getEffect('irHall.ogg')
       instance.on('startBefore', () => {
         instance.resumeState()
         // toogle(instance)

@@ -5,20 +5,31 @@ import {
   createProcessingNode
 } from './util'
 import Event from '../event'
+import { isUndef, isNumber } from '../share'
 
 export default class Pitch extends Event {
   constructor (pitchShift, options) {
     super()
-    if (!pitchShift) {
+    if (isUndef(pitchShift)) {
       throw new Error('Missing "pitch-shift" library, see "https://www.npmjs.com/package/pitch-shift"')
     }
-
-    options.frameSize = options.frameSize || 2048
 
     this.queue = []
     this.node = null
     this.pitchValue = 1.0
     this.cache = Object.create(null)
+
+    // don't use pitchSift library
+    if (pitchShift === false) {
+      this.channels = 2
+      this.frameSize = 2048
+      this.useOutLib = false
+      return
+    }
+
+    options.frameSize = options.frameSize || 2048
+
+    this.useOutLib = true
     this.frameSize = options.frameSize
     this.channels = options.channels || 2
     this.shiftBuffer = pitchShift(
@@ -33,8 +44,12 @@ export default class Pitch extends Event {
   }
 
   set value (v) {
-    this.pitchValue = v
-    this.dispatch('change', v)
+    if (isNumber(v)) {
+      this.pitchValue = v
+      this.dispatch('change', v)
+    } else {
+      console.warn('pitch value is not Number');
+    }
   }
 
   connect (preNode) {
@@ -68,9 +83,18 @@ export default class Pitch extends Event {
 }
 
 function operationalBuffer (Pitch, input, output) {
-  const process = typeof Pitch.process === 'function'
-    ? Pitch.process
-    : Pitch._process
+  let process
+  if (!Pitch.useOutLib) {
+    if (Pitch.process) {
+      process = Pitch.process
+    } else {
+      throw new Error('must defined "process" method')
+    }
+  } else {
+    process = typeof Pitch.process === 'function'
+      ? Pitch.process
+      : Pitch._process
+  }
 
   for (let i = 0; i < Pitch.channels; i++) {
     const inputData = input.getChannelData(i)

@@ -253,7 +253,6 @@ export default class SingleHearken extends BasicSupport {
 
       // we can't allow mutilple sound play, so, we need stop previous sound
       if (this.nodes && !noStop) {
-        console.log('stop');
         this.stop()
       }
 

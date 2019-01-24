@@ -16,10 +16,10 @@
   let buffer
   const hearken = new Hearken()
   const manager = hearken.create()
-  const pitch = new Hearken.Pitch(pitchShift, {
+  const pitch = new Hearken.Pitch(false, {
       frameSize: 2048,
       hopSize: 512,
-      channel: 2
+      channel: 2,
     }
   )
 
@@ -40,25 +40,29 @@
       getMusic('毒苹果').then(buffer => {
         buffer = buffer
         manager.replaceBuffer(buffer)
-        manager.fadeStart()
+        manager.Hearken.ready(() => {
+          manager.fadeStart()
+        })
       })
     } else {
-      manager.start()
+      manager.Hearken.ready(() => {
+        manager.fadeStart()
+      })
     }
   }
 
   // 允许自定义 process
   const process = (input, output) => {
     for (let i = 0; i < pitch.frameSize; i++) {
-      output[i] = input[i]
+      output[i] = input[i + 2]
     }
   }
   pitch.process = process
-  pitch.on('change', v => {
-    pitch.process = v === 1 
-      ? process
-      : null
-  })
+  // pitch.on('change', v => {
+  //   pitch.process = v === 1 
+  //     ? process
+  //     : null
+  // })
 
   manager.on('connect', ([node, connect]) => {
     pitch.connect(node)

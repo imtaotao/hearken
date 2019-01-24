@@ -34,14 +34,15 @@
 <script>
   import Hearken from '../src'
 
-  const r = window.r = Grass.mount(window.root, function CM (props) {
+  const r = window.r = new Hearken.Record()
+  const cm = window.cm = Grass.mount(window.root, function CM (props) {
     props.start = start
     props.stop = stop
     return // #temp string
   })
 
   function start () {
-
+    r.start()
   }
 
   function stop () {

@@ -4,7 +4,8 @@ export function connectRecordDevice (Record) {
   })
 }
 
-export function createProcessingNode (Record, AudioCtx, fn) {
+export function createProcessingNode (Record, fn) {
+  const { AudioCtx, frameSize, channels } = Record
   const scriptNode = AudioCtx.createScriptProcessor
     ? AudioCtx.createScriptProcessor(frameSize, channels, channels)
     : AudioCtx.createJavaScriptNode(frameSize, channels, channels)
