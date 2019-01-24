@@ -34,6 +34,7 @@
 <script>
   import Hearken from '../src'
 
+  window.h = Hearken
   const r = window.r = new Hearken.Record()
   const cm = window.cm = Grass.mount(window.root, function CM (props) {
     props.start = start
@@ -45,7 +46,14 @@
     r.start()
   }
 
-  function stop () {
+  async function stop () {
+    const buffer = await r.stop()
+    // play(buffer)
   }
   
+  function play (buffer) {
+    console.log(buffer);
+    const m = new Hearken().create(buffer)
+    m.start()
+  }
 </script>

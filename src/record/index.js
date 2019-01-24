@@ -16,10 +16,11 @@ export default class Record extends Event {
     this.buffer = null
     this.process = null
     this.recording = false
+    this.float32Array = null
     this.initCompleted = false
     this.channels = channels || 2
     this.frameSize = frameSize || 2048
-    this.collectPureData = collectPureData
+    this.collectPureData = !!collectPureData
     this.AudioCtx = AudioCtx || createAudioContext(Record)
   }
 
@@ -38,15 +39,9 @@ export default class Record extends Event {
       this.node = createProcessingNode(this, operationalBuffer)
       // if start record, processNode need connect streamNode
       this.stream = this.AudioCtx.createMediaStreamSource(stream)
-
-      // collect record data
-      this.worker.onmessage = e => {
-        switch(e.data.command) {
-          case 'exportBuffer' :
-            this.buffer = e.data.value
-            break
-        }
-      }
+      // worker event
+      this.worker.onmessage = workerEvent(this)
+      this.worker.onerror = err => { throw new Error(err) }
     })
   }
 
@@ -64,32 +59,78 @@ export default class Record extends Event {
   }
 
   stop () {
-    if (this.recording) {
-      this.node.disconnect()
-      this.worker.postMessage({
-        command: 'exportBuffer',
+    return new Promise(resolve => {
+      if (this.recording) {
+        this.once('_exportBuffer', buffer => {
+          this.recording = false
+          console.log(buffer);
+          resolve(buffer)
+        })
+        this.node.disconnect()
+        this.stream.disconnect()
+        this.send('exportBuffer', {
+          channels: this.channels,
+          frameSize: this.frameSize,
+        })
+      } else {
+        resolve(false)
+      }
+    })
+  }
+
+  getFile (sampleRate = 44100) {
+    if (!this.worker) {
+      throw new Error('you must initialization environment and record data')
+    }
+    if (!this.float32Array) {
+      throw new Error('the record data is null')
+    }
+    return new Promise(resolve => {
+      this.once('_getFile', data => {
+        resolve(new Blob([data], {type: 'audio/wav'}))
+      })
+      this.send('getFile', {
+        sampleRate,
+        channels: this.channels,
+        samples: this.float32Array,
+      })
+    }) 
+  }
+
+  download (filename, sampleRate) {
+    if (typeof filename === 'string') {
+      this.getFile(sampleRate).then(data => {
+        const url = window.URL.createObjectURL(data)
+        const link = window.document.createElement('a')
+        const event = document.createEvent('MouseEvents')
+  
+        link.href = url
+        link.download = filename + '.wav'
+        event.initMouseEvent('click', true, true)
+        link.dispatchEvent(event)
       })
     }
   }
 
-  download () {
-    if (!this.worker) {
-      console.warn('can\'t download, you must initialization environment')
-      return null
-    }
-    if (!this.buffer) {
-      return null
-    }
-    console.log(this.buffer);
+  send (command, value) {
+    this.worker.postMessage({command, value})
   }
 
   clear () {
-    this.worker = null
     this.node.disconnect()
     this.stream.disconnect()
+
     this.node = null
+    this.worker = null
     this.stream = null
+    this.buffer = null
+    this.float32Array = null
+
+    this.recording = false
     this.initCompleted = false
+
+    this.off('_getFile')
+    this.off('_exportBuffer')
   }
 }
 
@@ -110,9 +151,27 @@ function operationalBuffer (Record, input, output) {
         : outputData
     )
   }
-
-  Record.worker.postMessage({
-    command: 'appendBuffer',
-    value: buffers,
+console.log(buffers);
+  Record.send('appendBuffer', {
+    buffers,
+    channels: Record.channels,
   })
+}
+
+function workerEvent (Record) {
+  return e => { 
+    switch(e.data.command) {
+      case 'getFile' :
+        Record.dispatch('_getFile', e.data.value)
+        break
+      case 'exportBuffer' :
+        const typeArrData = e.data.value
+        const buffer = typeArrData && typeArrData.buffer
+
+        Record.buffer = buffer
+        Record.float32Array = typeArrData
+        Record.dispatch('_exportBuffer', buffer)
+        break
+    }
+  }
 }
