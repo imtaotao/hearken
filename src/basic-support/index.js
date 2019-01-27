@@ -10,11 +10,23 @@ export default class BasicSupport extends Event {
   constructor () {
     super()
     this.nodes = null
+    this.libs = new Map()
     this.audioBuffer = null
     this.panner = new Panner(this)
     this.filter = new Filter(this)
     this.convolver = new Convolver(this)
     this.mode = this instanceof SingleHearken ? 'Buffer' : 'Media'
+  }
+
+  // use outlibs
+  use (lib) {
+    if (!this.libs.has(lib)) {
+      this.libs.set(lib)
+      this.on('connect', ([node, connect]) => {
+        lib.connect(node)
+        connect(lib)
+      })
+    }
   }
 
   connectNodes () {

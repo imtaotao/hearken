@@ -78,6 +78,10 @@ export default class Record extends Event {
     })
   }
 
+  use () {
+    
+  }
+
   getFile (sampleRate = 44100) {
     if (!this.worker) {
       throw new Error('you must initialization environment and record data')

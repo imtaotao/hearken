@@ -42,6 +42,8 @@
     return // #temp string
   })
 
+  r.use()
+
   function start () {
     r.start()
   }
