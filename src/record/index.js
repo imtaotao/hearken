@@ -38,10 +38,7 @@ export default class Record extends Event {
     }
     return connectRecordDevice(this).then(stream => {
       if (!stream) {
-        const info = 'Unable to use recording device'
-        console.warn(info)
-        this.dispatch('error', info)
-        return
+        throw new Error('Unable to use recording device')
       }
 
       this.initCompleted = true
