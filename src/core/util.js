@@ -1,7 +1,7 @@
 import { range, isUndef } from '../share'
 
 export function startCoreFn (Instance, time, duration) {
-  const { nodes, options, audioBuffer } = Instance
+  const { nodes, options, audioBuffer, playRecordingSound } = Instance
   const bufferSource = nodes.bufferSource
   
   if (bufferSource.buffer) {
@@ -10,7 +10,7 @@ export function startCoreFn (Instance, time, duration) {
   }
 
   // save resouce duration
-  if (duration !== Instance.duration) {
+  if (!playRecordingSound && duration !== Instance.duration) {
     Instance.duration = isUndef(duration)
       ? audioBuffer.duration
       : range(0, audioBuffer.duration, duration)

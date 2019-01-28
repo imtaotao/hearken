@@ -20,6 +20,8 @@ export default class SingleHearken extends BasicSupport {
 
     this.duration = null
     this.whenPlayTime = 0
+    // if is true, allow connect record node
+    this.playRecordingSound = false
     // start time is a playing time, the forward time is not counted
     this.startTime = null
     this.playingTime = 0
@@ -39,7 +41,7 @@ export default class SingleHearken extends BasicSupport {
       'convolver',
       'analyser',
       'passFilterNode',
-      'filterNode', 
+      'filterNode',
       'bufferSource',
     ]
   }
@@ -240,7 +242,7 @@ export default class SingleHearken extends BasicSupport {
 
   start (t, d, noStop) {
     return new Promise(resolve => {
-      if (!this.buffer && !this.audioBuffer) {
+      if (!this.buffer && !this.audioBuffer && !this.playRecordingSound) {
         throw new Error('The resource must be of type arraybuffer or audiobuffer, can\'t play')
       }
       if (this.AudioCtx.state === 'suspended') {
@@ -248,8 +250,6 @@ export default class SingleHearken extends BasicSupport {
         resolve(false)
         return
       }
-
-      const { time, duration } = this.getNomalTimeAndDuration(t, d)
 
       // we can't allow mutilple sound play, so, we need stop previous sound
       if (this.nodes && !noStop) {
@@ -259,18 +259,23 @@ export default class SingleHearken extends BasicSupport {
       this.resetContainer()
       this.callStop = false
 
-      if (this.audioBuffer) {
-        startCoreFn(this, time, duration)
+      if (this.playRecordingSound) {
+        startCoreFn(this, 0, undefined)
         resolve(true)
-        return
+      } else {
+        const { time, duration } = this.getNomalTimeAndDuration(t, d)
+        if (this.audioBuffer) {
+          startCoreFn(this, time, duration)
+          resolve(true)
+        } else if (this.buffer) {
+          this.AudioCtx.decodeAudioData(this.buffer, audioBuffer => {
+            this.buffer = null
+            this.audioBuffer = audioBuffer
+            startCoreFn(this, time, duration)
+            resolve(true)
+          })
+        }
       }
-  
-      this.AudioCtx.decodeAudioData(this.buffer, audioBuffer => {
-        this.buffer = null
-        this.audioBuffer = audioBuffer
-        startCoreFn(this, time, duration)
-        resolve(true)
-      })
     })
   }
 

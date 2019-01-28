@@ -33,29 +33,37 @@
 
 <script>
   import Hearken from '../src'
+  import pitchShift from 'pitch-shift'
 
-  window.h = Hearken
-  const r = window.r = new Hearken.Record()
+  const pitch = window.p = new Hearken.Pitch(pitchShift, {
+      frameSize: 2048,
+      hopSize: 512,
+      channel: 2,
+    }
+  )
+
+  const m = window.m = new Hearken().create({
+    // delay: 2,
+    volume: 1,
+  })
+  const r = window.r = new Hearken.Record(2048, 2, m.AudioCtx)
+
+  r.connect(m)
+  r.connect(pitch)
+
   const cm = window.cm = Grass.mount(window.root, function CM (props) {
     props.start = start
     props.stop = stop
     return // #temp string
   })
 
-  r.use()
+  r.connect(r)
 
   function start () {
-    r.start()
+    r.start().then(s => s && m.start())
   }
 
-  async function stop () {
-    const buffer = await r.stop()
-    // play(buffer)
-  }
-  
-  function play (buffer) {
-    console.log(buffer);
-    const m = new Hearken().create(buffer)
-    m.start()
+  function stop () {
+    r.stop()
   }
 </script>

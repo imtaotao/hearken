@@ -1,5 +1,7 @@
 import Event from '../event'
 import workerBody from './worker'
+import PitchShift from '../pitch-shift'
+import SingleHearken from '../core/single'
 import { inlineWorker, createAudioContext } from '../share'
 import { connectRecordDevice, createProcessingNode } from './util'
 
@@ -14,6 +16,7 @@ export default class Record extends Event {
     this.stream = null
     this.worker = null
     this.buffer = null
+    this.player = null
     this.process = null
     this.recording = false
     this.float32Array = null
@@ -30,7 +33,9 @@ export default class Record extends Event {
     }
     return connectRecordDevice(this).then(stream => {
       if (!stream) {
-        this.dispatch('error', 'Unable to use recording device')
+        const info = 'Unable to use recording device'
+        console.warn(info)
+        this.dispatch('error', info)
         return
       }
 
@@ -46,16 +51,30 @@ export default class Record extends Event {
   }
 
   start () {
-    if (!this.recording) {
-      const core = () => {
-        this.stream.connect(this.node)
-        this.node.connect(this.AudioCtx.destination)
+    return new Promise(resolve => {
+      if (!this.recording) {
+        const core = () => {
+          this.stream.connect(this.node)
+          if (this.player) {
+            // connect hearken player
+            this.player.on('connect', ([node, connect]) => {
+              this.node.connect(node)
+              connect(this.node)
+            })
+            this.player.start()
+          } else {
+            this.node.connect(this.AudioCtx.destination)
+          }
+          resolve(true)
+        }
+        this.recording = true
+        this.initCompleted
+          ? core()
+          : this.init().then(core)
+      } else {
+        resolve(false)
       }
-      this.recording = true
-      this.initCompleted
-        ? core()
-        : this.init().then(core)
-    }
+    })
   }
 
   stop () {
@@ -63,7 +82,6 @@ export default class Record extends Event {
       if (this.recording) {
         this.once('_exportBuffer', buffer => {
           this.recording = false
-          console.log(buffer);
           resolve(buffer)
         })
         this.node.disconnect()
@@ -72,14 +90,11 @@ export default class Record extends Event {
           channels: this.channels,
           frameSize: this.frameSize,
         })
+        this.player && this.player.stop()
       } else {
         resolve(false)
       }
     })
-  }
-
-  use () {
-    
   }
 
   getFile (sampleRate = 44100) {
@@ -102,22 +117,48 @@ export default class Record extends Event {
   }
 
   download (filename, sampleRate) {
-    if (typeof filename === 'string') {
-      this.getFile(sampleRate).then(data => {
-        const url = window.URL.createObjectURL(data)
-        const link = window.document.createElement('a')
-        const event = document.createEvent('MouseEvents')
-  
-        link.href = url
-        link.download = filename + '.wav'
-        event.initMouseEvent('click', true, true)
-        link.dispatchEvent(event)
-      })
-    }
+    this.getFile(sampleRate).then(data => {
+      const url = window.URL.createObjectURL(data)
+      const link = window.document.createElement('a')
+      const event = document.createEvent('MouseEvents')
+
+      link.href = url
+      link.download = filename + '.wav'
+      event.initMouseEvent('click', true, true)
+      link.dispatchEvent(event)
+    })
   }
 
   send (command, value) {
     this.worker.postMessage({command, value})
+  }
+
+  connect (plugin) {
+    if (plugin instanceof SingleHearken) {
+      this.player = plugin
+      plugin.playRecordingSound = true 
+      if (!this.process) {
+        this.process = (inputData, outputData, frameSize) => {
+          for (let i = 0; i < frameSize; i++) {
+            outputData[i] = inputData[i]
+          }
+        }
+      }
+    }
+
+    if (plugin instanceof PitchShift) {
+      const match = attr => {
+        if (plugin[attr] !== this[attr]) {
+          throw new Error(`The "${attr}" of pitchSift must match the record`)
+        }
+      }
+      // check the properties are correct
+      match('channels')
+      match('frameSize')
+      this.process = (inputData, outputData) => {
+        (plugin.process || plugin._process).call(plugin, inputData, outputData, true)
+      }
+    }
   }
 
   clear () {
@@ -128,6 +169,7 @@ export default class Record extends Event {
     this.worker = null
     this.stream = null
     this.buffer = null
+    this.player = null
     this.float32Array = null
 
     this.recording = false
@@ -147,7 +189,7 @@ function operationalBuffer (Record, input, output) {
     const outputData = output.getChannelData(i)
 
     // allow pitch shift
-    canCall && Record.process(inputData, outputData)
+    canCall && Record.process(inputData, outputData, Record.frameSize)
 
     buffers.push(
       !canCall || Record.collectPureData
@@ -155,7 +197,7 @@ function operationalBuffer (Record, input, output) {
         : outputData
     )
   }
-console.log(buffers);
+
   Record.send('appendBuffer', {
     buffers,
     channels: Record.channels,

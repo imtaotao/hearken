@@ -24,6 +24,7 @@ export default class Pitch extends Event {
       this.channels = 2
       this.frameSize = 2048
       this.useOutLib = false
+      this.shiftBuffer = null
       return
     }
 

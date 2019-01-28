@@ -17,6 +17,8 @@ module.exports = {
     contentBase: __dirname,
     inline: true,
     hot: true,
+    progress: true,
+    // host: '192.168.1.101',
   },
   module: {
     rules: [
