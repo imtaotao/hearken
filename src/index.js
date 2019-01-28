@@ -9,10 +9,10 @@ Hearken.Record = Record
 Hearken.Stream = Stream
 Hearken.Media = MediaElement
 
-export default Hearken
 export {
   Pitch,
   Record,
   Stream,
+  Hearken as default,
   MediaElement as Media,
 }

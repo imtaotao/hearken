@@ -2722,8 +2722,8 @@ Hearken.Record = Record;
 Hearken.Stream = Stream;
 Hearken.Media = MediaElement;
 
-exports.default = Hearken;
 exports.Pitch = Pitch;
 exports.Record = Record;
 exports.Stream = Stream;
+exports.default = Hearken;
 exports.Media = MediaElement;
