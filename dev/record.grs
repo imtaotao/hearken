@@ -32,10 +32,10 @@
 </template>
 
 <script>
-  import Hearken from '../src'
+  import Hearken, { Pitch, Record } from '../src'
   import pitchShift from 'pitch-shift'
 
-  const pitch = window.p = new Hearken.Pitch(pitchShift, {
+  const pitch = window.p = new Pitch(pitchShift, {
       frameSize: 2048,
       hopSize: 512,
       channel: 2,
@@ -46,7 +46,7 @@
     // delay: 2,
     volume: 1,
   })
-  const r = window.r = new Hearken.Record(2048, 2, m.AudioCtx)
+  const r = window.r = new Record(2048, 2, m.AudioCtx)
 
   r.connect(m)
   r.connect(pitch)

@@ -1,5 +1,7 @@
 'use strict';
 
+Object.defineProperty(exports, '__esModule', { value: true });
+
 function _classCallCheck(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError("Cannot call a class as a function");
@@ -2720,4 +2722,8 @@ Hearken.Record = Record;
 Hearken.Stream = Stream;
 Hearken.Media = MediaElement;
 
-module.exports = Hearken;
+exports.default = Hearken;
+exports.Pitch = Pitch;
+exports.Record = Record;
+exports.Stream = Stream;
+exports.Media = MediaElement;

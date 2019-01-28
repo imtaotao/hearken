@@ -2719,3 +2719,4 @@ Hearken.Stream = Stream;
 Hearken.Media = MediaElement;
 
 export default Hearken;
+export { Pitch, Record, Stream, MediaElement as Media };
