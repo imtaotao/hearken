@@ -16,8 +16,6 @@ export function createProcessingNode (Record, fn) {
   return scriptNode
 }
 
-
-
 export function operationalBuffer (Record, input, output) {
   const buffers = []
   const canCall = typeof Record.process === 'function'
@@ -27,7 +25,7 @@ export function operationalBuffer (Record, input, output) {
     const outputData = output.getChannelData(i)
 
     // allow pitch shift
-    canCall && Record.process(inputData, outputData, Record.frameSize)
+    canCall && Record.process(inputData, outputData)
 
     buffers.push(
       !canCall || Record.collectPureData

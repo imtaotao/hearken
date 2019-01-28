@@ -143,10 +143,8 @@ export default class Record extends Event {
       this.player = plugin
       plugin.playRecordingSound = true 
       if (!this.process) {
-        this.process = (inputData, outputData, frameSize) => {
-          for (let i = 0; i < frameSize; i++) {
-            outputData[i] = inputData[i]
-          }
+        this.process = (inputData, outputData) => {
+          outputData.set(inputData)
         }
       }
     }
