@@ -1793,7 +1793,9 @@ function connectRecordDevice(Record) {
   return navigator.mediaDevices.getUserMedia({
     audio: true
   }).catch(function () {
-    Record.dispatch('error', 'Unable to use recording device');
+    var info = 'Unable to use recording device';
+    console.warn(info);
+    Record.dispatch('error', info);
   });
 }
 function createProcessingNode$1(Record, fn) {
@@ -1920,7 +1922,7 @@ function (_Event) {
                 connect(_this3.node);
               });
 
-              _this3.player.start();
+              _this3.player.Hearken.ready(_this3.player.start());
             } else {
               _this3.node.connect(_this3.AudioCtx.destination);
             }
@@ -2017,7 +2019,14 @@ function (_Event) {
     value: function connect(plugin) {
       var _this6 = this;
 
+      var match = function match(attr) {
+        if (plugin[attr] !== _this6[attr]) {
+          throw new Error("The \"".concat(attr, "\" of ").concat(plugin.constructor.name, " must match the record"));
+        }
+      };
+
       if (plugin instanceof SingleHearken) {
+        match('AudioCtx');
         this.player = plugin;
         plugin.playRecordingSound = true;
 
@@ -2029,12 +2038,6 @@ function (_Event) {
       }
 
       if (plugin instanceof Pitch) {
-        var match = function match(attr) {
-          if (plugin[attr] !== _this6[attr]) {
-            throw new Error("The \"".concat(attr, "\" of pitchSift must match the record"));
-          }
-        };
-
         match('channels');
         match('frameSize');
 

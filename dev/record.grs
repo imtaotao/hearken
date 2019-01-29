@@ -33,6 +33,7 @@
 
 <script>
   import Hearken, { Pitch, Record } from '../src'
+  import { get } from '../demo/xhr'
   import pitchShift from 'pitch-shift'
 
   const pitch = window.p = new Pitch(pitchShift, {
@@ -42,8 +43,8 @@
     }
   )
 
-  const m = window.m = new Hearken().create({
-    // delay: 2,
+  const m = window.mm = new Hearken().create(null, {
+    delay: 3,
     volume: 1,
   })
   const r = window.r = new Record(2048, 2, m.AudioCtx)
@@ -57,10 +58,23 @@
     return // #temp string
   })
 
+  window.g = function getEffect (name) {
+    get('http://localhost:3000/getMusic?name=convoler/' + name, buffer => {
+      const instance = m
+      if (instance) {
+        const style = name.split('.')[0]
+        instance.convolver.appendBuffer(style, buffer).then(() => {
+          instance.convolver.setStyle(style)
+          console.log(style)
+        })
+      }
+    })
+  }
+
   r.connect(r)
 
   function start () {
-    r.start().then(s => s && m.start())
+    r.start()
   }
 
   function stop () {

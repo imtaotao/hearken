@@ -52,7 +52,7 @@
   let time, i = 0, val = 1
   const h = window.h = new Hearken({
     loop: true,
-    // delay: 3,
+    delay: 3,
     volume: 0.1,
   })
   const instance = window.aa = h.create()

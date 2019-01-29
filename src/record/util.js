@@ -1,6 +1,8 @@
 export function connectRecordDevice (Record) {
   return navigator.mediaDevices.getUserMedia({ audio: true }).catch(() => {
-    Record.dispatch('error', 'Unable to use recording device')
+    const info = 'Unable to use recording device'
+    console.warn(info)
+    Record.dispatch('error', info)
   })
 }
 
@@ -10,7 +12,7 @@ export function createProcessingNode (Record, fn) {
     ? AudioCtx.createScriptProcessor(frameSize, channels, channels)
     : AudioCtx.createJavaScriptNode(frameSize, channels, channels)
 
-  scriptNode.onaudioprocess = function (e) {
+  scriptNode.onaudioprocess = e => {
     fn(Record, e.inputBuffer, e.outputBuffer)
   }
   return scriptNode

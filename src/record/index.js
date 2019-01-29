@@ -63,7 +63,7 @@ export default class Record extends Event {
               this.node.connect(node)
               connect(this.node)
             })
-            this.player.start()
+            this.player.Hearken.ready(this.player.start())
           } else {
             this.node.connect(this.AudioCtx.destination)
           }
@@ -136,7 +136,14 @@ export default class Record extends Event {
   }
 
   connect (plugin) {
+    const match = attr => {
+      if (plugin[attr] !== this[attr]) {
+        throw new Error(`The "${attr}" of ${plugin.constructor.name} must match the record`)
+      }
+    }
+
     if (plugin instanceof SingleHearken) {
+      match('AudioCtx')
       this.player = plugin
       plugin.playRecordingSound = true 
       if (!this.process) {
@@ -147,11 +154,6 @@ export default class Record extends Event {
     }
 
     if (plugin instanceof PitchShift) {
-      const match = attr => {
-        if (plugin[attr] !== this[attr]) {
-          throw new Error(`The "${attr}" of pitchSift must match the record`)
-        }
-      }
       // check the properties are correct
       match('channels')
       match('frameSize')
