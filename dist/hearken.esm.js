@@ -1820,6 +1820,7 @@ function operationalBuffer$1(Record, input, output) {
     var inputData = input.getChannelData(i);
     var outputData = output.getChannelData(i);
     canCall && Record.process(inputData, outputData);
+    Record._process && Record._process(inputData, outputData);
     buffers.push(!canCall || Record.collectPureData ? inputData : outputData);
   }
 
@@ -1868,6 +1869,7 @@ function (_Event) {
     _this.buffer = null;
     _this.player = null;
     _this.process = null;
+    _this._process = null;
     _this.recording = false;
     _this.float32Array = null;
     _this.initCompleted = false;
@@ -2043,7 +2045,7 @@ function (_Event) {
         match('channels');
         match('frameSize');
 
-        this.process = function (inputData, outputData) {
+        this._process = function (inputData, outputData) {
           (plugin.process || plugin._process).call(plugin, inputData, outputData, true);
         };
       }

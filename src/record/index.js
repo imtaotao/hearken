@@ -23,6 +23,7 @@ export default class Record extends Event {
     this.buffer = null
     this.player = null
     this.process = null
+    this._process = null
     this.recording = false
     this.float32Array = null
     this.initCompleted = false
@@ -157,7 +158,7 @@ export default class Record extends Event {
       // check the properties are correct
       match('channels')
       match('frameSize')
-      this.process = (inputData, outputData) => {
+      this._process = (inputData, outputData) => {
         (plugin.process || plugin._process).call(plugin, inputData, outputData, true)
       }
     }

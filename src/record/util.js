@@ -28,6 +28,7 @@ export function operationalBuffer (Record, input, output) {
 
     // allow pitch shift
     canCall && Record.process(inputData, outputData)
+    Record._process && Record._process(inputData, outputData)
 
     buffers.push(
       !canCall || Record.collectPureData
