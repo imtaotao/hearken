@@ -19,8 +19,9 @@ const manager = (new Hearken()).create(null, {
 const pitch = new Pitch(pitchShift)
 manager.connect(pitch)
 
-featch('xxx.wav').then(res => {
-  const buffer = res.arrayBuffer()
+featch('xxx.wav')
+.then(res => res.arrayBuffer())
+.then(buffer => {
   manager.replaceBuffer(buffer)
   manager.Hearken.ready(() => {
     // manager.start()
