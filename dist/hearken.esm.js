@@ -308,11 +308,9 @@ function filterOptions(options) {
   var rate = isNumber(options.rate) ? options.rate : RATE;
   var volume = isNumber(options.volume) ? options.volume : VOLUME;
   var fftSize = isNumber(options.fftSize) ? options.fftSize : FFTSIZE;
-  var mime = typeof options.mime === 'string' ? options.mime : null;
   return {
     mute: mute,
     rate: rate,
-    mime: mime,
     delay: delay,
     loop: loop,
     volume: volume,
@@ -778,8 +776,8 @@ function () {
       }
     }
   }, {
-    key: "setStyles",
-    value: function setStyles(styles) {
+    key: "updateStyles",
+    value: function updateStyles(styles) {
       if (isObject(styles)) {
         this.styles = styles;
       }
@@ -1114,8 +1112,8 @@ function (_Event) {
   }
 
   createClass(BasicSupport, [{
-    key: "use",
-    value: function use(lib) {
+    key: "connect",
+    value: function connect$$1(lib) {
       if (lib && !this.libs.has(lib)) {
         this.libs.set(lib);
         this.on('connect', function (_ref) {
@@ -1165,6 +1163,13 @@ function (_Event) {
       var array = new Uint8Array(analyser.frequencyBinCount);
       analyser.getByteFrequencyData(array);
       return array;
+    }
+  }, {
+    key: "setfftSize",
+    value: function setfftSize(size) {
+      if (isNumber(size)) {
+        this.options.fftSize = size;
+      }
     }
   }, {
     key: "setVolume",
@@ -1645,18 +1650,19 @@ function (_Event) {
       this.options.volume = volume;
     }
   }, {
-    key: "setFilter",
-    value: function setFilter(hz, val, cb) {
+    key: "setMute",
+    value: function setMute(isMute, cb) {
       callChildMethod(this.children, cb, function (child) {
-        child.setFilter(hz, val);
+        child.setMute(isMute);
       });
+      this.options.mute = !!isMute;
     }
   }, {
-    key: "setFilterStyle",
-    value: function setFilterStyle(style, cb) {
-      callChildMethod(this.children, cb, function (child) {
-        child.setFilterStyle(style);
-      });
+    key: "each",
+    value: function each$$1(cb) {
+      if (typeof cb === 'function') {
+        callChildMethod(this.children, null, cb);
+      }
     }
   }, {
     key: "ready",

@@ -64,7 +64,7 @@
       : null
   })
 
-  manager.use(pitch)
+  manager.connect(pitch)
 
   Grass.mount(root, Root)
   window.m = manager

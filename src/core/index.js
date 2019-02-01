@@ -43,16 +43,17 @@ export default class Hearken extends Event {
     this.options.volume = volume
   }
 
-  setFilter (hz, val, cb) {
+  setMute (isMute, cb) {
     callChildMethod(this.children, cb, child => {
-      child.setFilter(hz, val)
+      child.setMute(isMute)
     })
+    this.options.mute = !!isMute
   }
 
-  setFilterStyle (style, cb) {
-    callChildMethod(this.children, cb, child => {
-      child.setFilterStyle(style)
-    })
+  each (cb) {
+    if (typeof cb === 'function') {
+      callChildMethod(this.children, null, cb)
+    }
   }
 
   // this method will resume all sound, async call callback

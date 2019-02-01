@@ -19,7 +19,7 @@ export default class BasicSupport extends Event {
   }
 
   // use outlibs
-  use (lib) {
+  connect (lib) {
     if (lib && !this.libs.has(lib)) {
       this.libs.set(lib)
       this.on('connect', ([node, connect]) => {
@@ -65,6 +65,12 @@ export default class BasicSupport extends Event {
     const array = new Uint8Array(analyser.frequencyBinCount)
     analyser.getByteFrequencyData(array)
     return array
+  }
+
+  setfftSize (size) {
+    if (isNumber(size)) {
+      this.options.fftSize = size
+    }
   }
 
   setVolume (volume) {

@@ -38,7 +38,7 @@ export default class Filter {
   }
 
   // we need check styles args
-  setStyles (styles) {
+  updateStyles (styles) {
     if (isObject(styles)) {
       this.styles = styles
     }

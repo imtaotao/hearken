@@ -107,10 +107,5 @@ export function filterOptions (options) {
     ? FFTSIZE
     : fftSize
 
-  // string
-  const mime = typeof options.mime === 'string'
-    ? options.mime
-    : null
-
-  return { mute, rate, mime, delay, loop, volume, fftSize }
+  return { mute, rate, delay, loop, volume, fftSize }
 }
