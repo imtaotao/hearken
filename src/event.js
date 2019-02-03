@@ -31,11 +31,14 @@ export default class Event {
         }
         remove('once')
         remove('normal')
-      } else {
+        return true
+      }
+
+      if (fn === undefined) {
         this._listener[event].once = []
         this._listener[event].normal = []
+        return true
       }
-      return true
     }
     return false
   }

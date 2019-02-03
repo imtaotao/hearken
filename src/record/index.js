@@ -25,6 +25,7 @@ export default class Record extends Event {
     this.process = null
     this._process = null
     this.recording = false
+    this.playerEvtFn = null
     this.float32Array = null
     this.initCompleted = false
     this.channels = channels || 2
@@ -60,10 +61,11 @@ export default class Record extends Event {
           this.stream.connect(this.node)
           if (this.player) {
             // connect hearken player
-            this.player.on('connect', ([node, connect]) => {
+            this.playerEvtFn = ([node, connect]) => {
               this.node.connect(node)
               connect(this.node)
-            })
+            }
+            this.player.on('connect', this.playerEvtFn)
             this.player.Hearken.ready(this.player.start())
           } else {
             this.node.connect(this.AudioCtx.destination)
@@ -93,7 +95,11 @@ export default class Record extends Event {
           channels: this.channels,
           frameSize: this.frameSize,
         })
-        this.player && this.player.stop()
+        if (this.player) {
+          this.player.off('connect', this.playerEvtFn)
+          this.playerEvtFn = null
+          this.player.stop()
+        }
       } else {
         resolve(false)
       }
@@ -158,9 +164,21 @@ export default class Record extends Event {
       // check the properties are correct
       match('channels')
       match('frameSize')
-      this._process = (inputData, outputData) => {
-        (plugin.process || plugin._process).call(plugin, inputData, outputData, true)
+
+      const fn = skip => {
+        if (skip) {
+          this._process = null
+        } else {
+          this._process = (inputData, outputData) => {
+            (plugin.process || plugin._process).call(plugin, inputData, outputData, true)
+          }
+        }
       }
+
+      plugin.off('skipChanged', plugin._fn)
+      plugin.on('skipChanged', fn)
+      plugin._fn = fn
+      fn(plugin.skip)
     }
   }
 

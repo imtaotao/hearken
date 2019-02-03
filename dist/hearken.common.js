@@ -144,12 +144,14 @@ function () {
 
           remove('once');
           remove('normal');
-        } else {
-          this._listener[event].once = [];
-          this._listener[event].normal = [];
+          return true;
         }
 
-        return true;
+        if (fn === undefined) {
+          this._listener[event].once = [];
+          this._listener[event].normal = [];
+          return true;
+        }
       }
 
       return false;
@@ -962,7 +964,9 @@ function (_Event) {
       return this._skip;
     },
     set: function set(v) {
-      this._skip = !!v;
+      v = !!v;
+      this._skip = v;
+      this.dispatch('skipChanged', v);
 
       if (this.Sound) {
         this.Sound.disconnectNodes();
@@ -1902,6 +1906,7 @@ function (_Event) {
     _this.process = null;
     _this._process = null;
     _this.recording = false;
+    _this.playerEvtFn = null;
     _this.float32Array = null;
     _this.initCompleted = false;
     _this.channels = channels || 2;
@@ -1947,7 +1952,7 @@ function (_Event) {
             _this3.stream.connect(_this3.node);
 
             if (_this3.player) {
-              _this3.player.on('connect', function (_ref) {
+              _this3.playerEvtFn = function (_ref) {
                 var _ref2 = slicedToArray(_ref, 2),
                     node = _ref2[0],
                     connect = _ref2[1];
@@ -1955,7 +1960,9 @@ function (_Event) {
                 _this3.node.connect(node);
 
                 connect(_this3.node);
-              });
+              };
+
+              _this3.player.on('connect', _this3.playerEvtFn);
 
               _this3.player.Hearken.ready(_this3.player.start());
             } else {
@@ -1993,7 +2000,13 @@ function (_Event) {
             frameSize: _this4.frameSize
           });
 
-          _this4.player && _this4.player.stop();
+          if (_this4.player) {
+            _this4.player.off('connect', _this4.playerEvtFn);
+
+            _this4.playerEvtFn = null;
+
+            _this4.player.stop();
+          }
         } else {
           resolve(false);
         }
@@ -2076,9 +2089,20 @@ function (_Event) {
         match('channels');
         match('frameSize');
 
-        this._process = function (inputData, outputData) {
-          (plugin.process || plugin._process).call(plugin, inputData, outputData, true);
+        var fn = function fn(skip) {
+          if (skip) {
+            _this6._process = null;
+          } else {
+            _this6._process = function (inputData, outputData) {
+              (plugin.process || plugin._process).call(plugin, inputData, outputData, true);
+            };
+          }
         };
+
+        plugin.off('skipChanged', plugin._fn);
+        plugin.on('skipChanged', fn);
+        plugin._fn = fn;
+        fn(plugin.skip);
       }
     }
   }, {

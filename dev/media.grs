@@ -14,11 +14,11 @@
       }
     </style>
     media
-    <input value="永夜" id="musicName"/>
+    <input value="凉凉 蒙面" id="musicName" @change='this.getMusic'/>
+    <button @click="this.getMusic">getMusic</button>
     <button @click="this.pause">暂停</button>
     <button @click="this.start">开始</button>
     <button @click="this.stop">停止</button>
-    <button @click="this.getMusic">getMusic</button>
     <input id='progress' type='range' value=0 />
     <input @change='this.getEffect' />
     {{ currentTime }}

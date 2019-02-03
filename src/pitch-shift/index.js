@@ -60,7 +60,9 @@ export default class Pitch extends Event {
   }
 
   set skip (v) {
-    this._skip = !!v
+    v = !!v
+    this._skip = v
+    this.dispatch('skipChanged', v)
     if (this.Sound) {
       this.Sound.disconnectNodes()
       this.Sound.connectNodes()
