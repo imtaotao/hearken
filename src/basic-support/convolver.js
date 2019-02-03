@@ -1,4 +1,3 @@
-import { disconnectNodes } from './util'
 import {
   each,
   isObject,
@@ -28,18 +27,15 @@ export default class Convolver {
       if (style) {
         const buffer = this.audioBufferList[style]
 
-        if (buffer) {
+        if (buffer && this.convolverNode ) {
           const existOfOriginBuffer = !!this.convolverNode.buffer
           // set style
           this.style = style
-
-          if (this.convolverNode) {
-            this.convolverNode.buffer = buffer
-            // if origin buffer is null, we need reset connect nodes
-            if (!existOfOriginBuffer) {
-              disconnectNodes(this.Sound)
-              this.Sound.connectNodes()
-            }
+          this.convolverNode.buffer = buffer
+          // if origin buffer is null, we need reset connect nodes
+          if (!existOfOriginBuffer) {
+            this.Sound.disconnectNodes()
+            this.Sound.connectNodes()
           }
         }
       }

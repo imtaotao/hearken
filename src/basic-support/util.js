@@ -1,4 +1,3 @@
-import { each } from '../share'
 import Pitch from '../pitch-shift'
 
 const mediaElementNodes = new WeakMap()
@@ -99,14 +98,6 @@ export function connect (Instance, cb) {
       }
     }
   }
-}
-
-export function disconnectNodes (Instance) {
-  const nodes = Instance.nodes
-  const filterNodes = Instance.filter.filterNodes
-
-  each(nodes, node => node.disconnect())
-  each(filterNodes, node => node.disconnect())
 }
 
 export function connectFilterNodes (audioCtx, hertz, preNode, cb) {

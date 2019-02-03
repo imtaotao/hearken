@@ -1,6 +1,5 @@
 import Stream from './stream'
 import BasicSupport from '../basic-support'
-import { disconnectNodes } from '../basic-support/util'
 import {
   startCoreFn,
   fadeStartOrPlay,
@@ -16,16 +15,20 @@ import {
 } from '../share'
 
 export default class MediaElement extends BasicSupport {
-  constructor (options) {
+  constructor (options = {}) {
     super()
     this.state = null
     this.endTimer = null
     this.duration = null
     this.delayTimer = null
     this.startInfor = null
-    this.audio = new Audio()
-    this.options = filterOptions(options || {})
+    this.options = filterOptions(options)
+    this.audio = options.audio || new Audio()
     this.AudioCtx = createAudioContext(MediaElement)
+
+    if (this.options.crossOrigin) {
+      this.audio.crossOrigin = 'anonymous'
+    }
 
     this.connectOrder = [
       'panner',
@@ -219,7 +222,7 @@ export default class MediaElement extends BasicSupport {
     // if the audio is playing, need pause
     if (state === 'playing') audio.pause()
     // disconnect nodes
-    if (nodes) disconnectNodes(this)
+    if (nodes) this.disconnectNodes()
     // clear pre delay timer
     if (delayTimer) clearTimeout(delayTimer)
     // stop loop timer

@@ -2,7 +2,7 @@ import Event from '../event'
 import Panner from './panner'
 import Filter from './filter'
 import Convolver from './convolver'
-import { isNumber } from '../share'
+import { each, isNumber } from '../share'
 import SingleHearken from '../core/single'
 import { connect, createNodes } from './util'
 
@@ -23,9 +23,14 @@ export default class BasicSupport extends Event {
     if (lib && !this.libs.has(lib)) {
       this.libs.set(lib)
       this.on('connect', ([node, connect]) => {
+        if (lib.skip) return
         lib.connect(node)
         connect(lib)
       })
+      // inject hearken
+      if (typeof lib.receiveMainLib === 'function') {
+        lib.receiveMainLib(this)
+      }
     }
   }
 
@@ -37,6 +42,14 @@ export default class BasicSupport extends Event {
         this.filter.filterNodes[hz] = nowFilter
       })
     }
+  }
+
+  disconnectNodes () {
+    const nodes = this.nodes
+    const filterNodes = this.filter.filterNodes
+  
+    each(nodes, node => node.disconnect())
+    each(filterNodes, node => node.disconnect())
   }
 
   getNomalTimeAndDuration (time, duration) {

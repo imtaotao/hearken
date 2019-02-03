@@ -66,6 +66,7 @@ export function startCoreFn (Instance, time, duration, cb) {
       // we don't need throw error
       return err
     }
+
     audio.play().then(success, error)
   })
 }

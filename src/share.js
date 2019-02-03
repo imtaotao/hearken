@@ -3,6 +3,7 @@ import {
   DELAY,
   VOLUME,
   FFTSIZE,
+  CROSSORIGIN,
 } from './default'
 
 export const isType = (v, type) => {
@@ -88,7 +89,7 @@ export function filterOptions (options) {
   // boolean
   const loop = !!options.loop
   const mute = !!options.mute
-
+  
   // number
   const delay = isNumber(options.delay)
     ? options.delay
@@ -99,6 +100,9 @@ export function filterOptions (options) {
   const volume = isNumber(options.volume)
     ? options.volume
     : VOLUME
+  const crossOrigin = isUndef(options.crossOrigin)
+    ? CROSSORIGIN
+    : options.crossOrigin
   let fftSize = isNumber(options.fftSize)
     ? options.fftSize
     : FFTSIZE
@@ -107,5 +111,5 @@ export function filterOptions (options) {
     ? FFTSIZE
     : fftSize
 
-  return { mute, rate, delay, loop, volume, fftSize }
+  return { mute, rate, delay, loop, volume, fftSize, crossOrigin }
 }

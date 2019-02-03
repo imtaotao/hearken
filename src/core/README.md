@@ -18,13 +18,15 @@ hearken 构造函数为一个父级的控制器，他能够控制所有子音频
   const ctr1 = h.create()
   let ctr2
 
-  fetch('xx.wav').then(res => {
-    const buffer = res.arrayBuffer()
+  fetch('xx.wav')
+  .then(res => res.arrayBuffer())
+  .then(buffer => {
     ctr1.replaceBuffer(buffer)
   })
 
-  fetch('xx.wav').then(res => {
-    const buffer = res.arrayBuffer()
+  fetch('xx.wav')
+  .then(res => res.arrayBuffer())
+  .then(buffer => {
     ctr2 = h.create(buffer)
   })
 ```

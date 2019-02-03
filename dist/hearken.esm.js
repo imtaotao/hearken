@@ -233,6 +233,7 @@ var RATE = 1;
 var DELAY = 0;
 var VOLUME = 1;
 var FFTSIZE = 16;
+var CROSSORIGIN = true;
 
 var isType = function isType(v, type) {
   return Object.prototype.toString.call(v) === "[object ".concat(type, "]");
@@ -307,6 +308,7 @@ function filterOptions(options) {
   var delay = isNumber(options.delay) ? options.delay : DELAY;
   var rate = isNumber(options.rate) ? options.rate : RATE;
   var volume = isNumber(options.volume) ? options.volume : VOLUME;
+  var crossOrigin = isUndef(options.crossOrigin) ? CROSSORIGIN : options.crossOrigin;
   var fftSize = isNumber(options.fftSize) ? options.fftSize : FFTSIZE;
   return {
     mute: mute,
@@ -314,7 +316,8 @@ function filterOptions(options) {
     delay: delay,
     loop: loop,
     volume: volume,
-    fftSize: fftSize
+    fftSize: fftSize,
+    crossOrigin: crossOrigin
   };
 }
 
@@ -491,261 +494,6 @@ function dealWithArg(arg, defaultArgs, name) {
   return isNumber(arg) ? defaultArgs[name] = arg : defaultArgs[name];
 }
 
-function createProcessingNode(Pitch, AudioCtx, fn) {
-  var channels = Pitch.channels,
-      frameSize = Pitch.frameSize;
-  var scriptNode = AudioCtx.createScriptProcessor ? AudioCtx.createScriptProcessor(frameSize, channels, channels) : AudioCtx.createJavaScriptNode(frameSize, channels, channels);
-
-  scriptNode.onaudioprocess = function (e) {
-    fn(Pitch, e.inputBuffer, e.outputBuffer);
-  };
-
-  return scriptNode;
-}
-function mallocFloat(FLOAT, l) {
-  var key = Math.floor(Math.log2(l));
-  var cache = FLOAT[key];
-  return cache && cache.length > 0 ? cache.pop() : new Float32Array(l);
-}
-function freeFloat(FLOAT, array) {
-  var key = Math.floor(Math.log2(array.length));
-  FLOAT[key] ? FLOAT[key].push(array) : FLOAT[key] = [array];
-}
-
-var Pitch =
-/*#__PURE__*/
-function (_Event) {
-  inherits(Pitch, _Event);
-
-  function Pitch(pitchShift, options) {
-    var _this;
-
-    classCallCheck(this, Pitch);
-
-    _this = possibleConstructorReturn(this, getPrototypeOf(Pitch).call(this));
-
-    if (isUndef(pitchShift)) {
-      throw new Error('Missing "pitch-shift" library, see "https://www.npmjs.com/package/pitch-shift"');
-    }
-
-    _this.queue = [];
-    _this.node = null;
-    _this.pitchValue = 1.0;
-    _this.cache = Object.create(null);
-
-    if (pitchShift === false) {
-      _this.channels = 2;
-      _this.frameSize = 2048;
-      _this.useOutLib = false;
-      _this.shiftBuffer = null;
-      return possibleConstructorReturn(_this);
-    }
-
-    options.frameSize = options.frameSize || 2048;
-    _this.useOutLib = true;
-    _this.frameSize = options.frameSize;
-    _this.channels = options.channels || 2;
-    _this.shiftBuffer = pitchShift(function (data) {
-      return onData(assertThisInitialized(assertThisInitialized(_this)), data);
-    }, function () {
-      return _this.pitchValue;
-    }, options);
-    return _this;
-  }
-
-  createClass(Pitch, [{
-    key: "connect",
-    value: function connect(preNode) {
-      this.clear();
-      this.disconnect();
-      this.createNode(preNode.context);
-      this.node.connect(preNode);
-    }
-  }, {
-    key: "disconnect",
-    value: function disconnect() {
-      this.node && this.node.disconnect();
-    }
-  }, {
-    key: "createNode",
-    value: function createNode(AudioCtx) {
-      this.node = createProcessingNode(this, AudioCtx, operationalBuffer);
-    }
-  }, {
-    key: "clear",
-    value: function clear() {
-      this.queue = [];
-      this.cache = Object.create(null);
-    }
-  }, {
-    key: "_process",
-    value: function _process(inputData, outputData, isInsertPitch) {
-      this.shiftBuffer(inputData);
-      var resData = this.queue.shift();
-
-      if (resData) {
-        outputData.set(resData);
-        isInsertPitch && freeFloat(this.cache, resData);
-      }
-    }
-  }, {
-    key: "value",
-    get: function get() {
-      return this.pitchValue;
-    },
-    set: function set(v) {
-      if (isNumber(v)) {
-        this.pitchValue = v;
-        this.dispatch('change', v);
-      } else {
-        console.warn('pitch value is not Number');
-      }
-    }
-  }]);
-
-  return Pitch;
-}(Event);
-
-function operationalBuffer(Pitch, input, output) {
-  var process;
-
-  if (!Pitch.useOutLib) {
-    if (Pitch.process) {
-      process = Pitch.process;
-    } else {
-      throw new Error('must defined "process" method');
-    }
-  } else {
-    process = typeof Pitch.process === 'function' ? Pitch.process : Pitch._process;
-  }
-
-  for (var i = 0; i < Pitch.channels; i++) {
-    var inputData = input.getChannelData(i);
-    var outputData = output.getChannelData(i);
-    process.call(Pitch, inputData, outputData, true);
-  }
-}
-
-function onData(Pitch, data) {
-  var buffer = mallocFloat(Pitch.cache, data.length);
-  buffer.set(data);
-  Pitch.queue.push(buffer);
-}
-
-var mediaElementNodes = new WeakMap();
-function createNodes(audioCtx, options, needMedia, audioElment) {
-  var nodes = Object.create(null);
-  nodes.delay = audioCtx.createDelay(179.9);
-  nodes.panner = audioCtx.createPanner();
-  nodes.gainNode = createGainNode(audioCtx);
-  nodes.convolver = audioCtx.createConvolver();
-  nodes.passFilterNode = createFilter(audioCtx);
-  nodes.analyser = createAnalyser(audioCtx, options);
-
-  if (needMedia) {
-    nodes.mediaSource = saveMediaSource(audioCtx, audioElment);
-  } else {
-    nodes.bufferSource = audioCtx.createBufferSource();
-  }
-
-  return nodes;
-}
-function createFilter(audioCtx) {
-  var ra = audioCtx.createBiquadFilter();
-  ra.type = 'peaking';
-  return ra;
-}
-
-function createAnalyser(audioCtx, options) {
-  var analyser = audioCtx.createAnalyser();
-  analyser.fftSize = options.fftSize * 2;
-  return analyser;
-}
-
-function createGainNode(audioCtx) {
-  var ac = audioCtx;
-  return ac[ac.createGain ? 'createGain' : 'createGainNode']();
-}
-
-function saveMediaSource(audioCtx, audio) {
-  if (mediaElementNodes.has(audio)) {
-    return mediaElementNodes.get(audio);
-  } else {
-    var source = audioCtx.createMediaElementSource(audio);
-    mediaElementNodes.set(audio, source);
-    return source;
-  }
-}
-
-function connect(Instance, cb) {
-  var preNode;
-  var nodes = Instance.nodes,
-      filter = Instance.filter,
-      AudioCtx = Instance.AudioCtx,
-      connectOrder = Instance.connectOrder;
-
-  for (var i = 0, len = connectOrder.length; i < len; i++) {
-    var name = connectOrder[i];
-
-    if (i === 0) {
-      nodes[name].connect(AudioCtx.destination);
-      preNode = nodes[name];
-    } else {
-      if (name === 'filterNode') {
-        if (filter.isExist()) {
-          preNode = connectFilterNodes(AudioCtx, filter.hertz, preNode, cb);
-        }
-      } else {
-        if (name === 'convolver') {
-          if (nodes[name].buffer === null) {
-            continue;
-          }
-        }
-
-        if (name === 'bufferSource' || name === 'mediaSource') {
-          var next = function next(toNode) {
-            if (toNode) {
-              if (toNode instanceof Pitch && toNode.node) {
-                preNode = toNode.node;
-              } else {
-                preNode = toNode;
-              }
-            }
-          };
-
-          Instance.dispatch('connect', [preNode, next]);
-        }
-
-        nodes[name].connect(preNode);
-        preNode = nodes[name];
-      }
-    }
-  }
-}
-function disconnectNodes(Instance) {
-  var nodes = Instance.nodes;
-  var filterNodes = Instance.filter.filterNodes;
-  each(nodes, function (node) {
-    return node.disconnect();
-  });
-  each(filterNodes, function (node) {
-    return node.disconnect();
-  });
-}
-function connectFilterNodes(audioCtx, hertz, preNode, cb) {
-  if (!hertz) return preNode;
-
-  for (var i = 0, len = hertz.length; i < len; i++) {
-    var hz = hertz[i];
-    var filterNode = createFilter(audioCtx, hz);
-    filterNode.connect(preNode);
-    preNode = filterNode;
-    cb && cb(hz, filterNode);
-  }
-
-  return preNode;
-}
-
 var INIT = function INIT() {};
 
 var Filter =
@@ -789,7 +537,7 @@ function () {
           filterNodes = this.filterNodes;
 
       if (!Object.keys(filterNodes).length) {
-        disconnectNodes(Sound);
+        Sound.disconnectNodes();
         Sound.connectNodes();
       }
 
@@ -818,7 +566,7 @@ function () {
 
             if (data) {
               if (!Object.keys(filterNodes).length) {
-                disconnectNodes(Sound);
+                Sound.disconnectNodes();
                 Sound.connectNodes();
               }
 
@@ -840,7 +588,7 @@ function () {
         var keys = Object.keys(this.filterNodes);
 
         if (!keys.length) {
-          disconnectNodes(this.Sound);
+          this.Sound.disconnectNodes();
           this.Sound.connectNodes();
           keys = Object.keys(this.filterNodes);
         }
@@ -991,17 +739,14 @@ function () {
         if (style) {
           var buffer = this.audioBufferList[style];
 
-          if (buffer) {
+          if (buffer && this.convolverNode) {
             var existOfOriginBuffer = !!this.convolverNode.buffer;
             this.style = style;
+            this.convolverNode.buffer = buffer;
 
-            if (this.convolverNode) {
-              this.convolverNode.buffer = buffer;
-
-              if (!existOfOriginBuffer) {
-                disconnectNodes(this.Sound);
-                this.Sound.connectNodes();
-              }
+            if (!existOfOriginBuffer) {
+              this.Sound.disconnectNodes();
+              this.Sound.connectNodes();
             }
           }
         }
@@ -1090,6 +835,271 @@ function () {
   return Convolver;
 }();
 
+function createProcessingNode(Pitch, AudioCtx, fn) {
+  var channels = Pitch.channels,
+      frameSize = Pitch.frameSize;
+  var scriptNode = AudioCtx.createScriptProcessor ? AudioCtx.createScriptProcessor(frameSize, channels, channels) : AudioCtx.createJavaScriptNode(frameSize, channels, channels);
+
+  scriptNode.onaudioprocess = function (e) {
+    fn(Pitch, e.inputBuffer, e.outputBuffer);
+  };
+
+  return scriptNode;
+}
+function mallocFloat(FLOAT, l) {
+  var key = Math.floor(Math.log2(l));
+  var cache = FLOAT[key];
+  return cache && cache.length > 0 ? cache.pop() : new Float32Array(l);
+}
+function freeFloat(FLOAT, array) {
+  var key = Math.floor(Math.log2(array.length));
+  FLOAT[key] ? FLOAT[key].push(array) : FLOAT[key] = [array];
+}
+
+var Pitch =
+/*#__PURE__*/
+function (_Event) {
+  inherits(Pitch, _Event);
+
+  function Pitch(pitchShift, options) {
+    var _this;
+
+    classCallCheck(this, Pitch);
+
+    _this = possibleConstructorReturn(this, getPrototypeOf(Pitch).call(this));
+
+    if (isUndef(pitchShift)) {
+      throw new Error('Missing "pitch-shift" library, see "https://www.npmjs.com/package/pitch-shift"');
+    }
+
+    _this.queue = [];
+    _this.node = null;
+    _this.Sound = null;
+    _this._skip = false;
+    _this.pitchValue = 1.0;
+    _this.cache = Object.create(null);
+
+    if (pitchShift === false) {
+      _this.channels = 2;
+      _this.frameSize = 2048;
+      _this.useOutLib = false;
+      _this.shiftBuffer = null;
+      return possibleConstructorReturn(_this);
+    }
+
+    options.frameSize = options.frameSize || 2048;
+    _this.useOutLib = true;
+    _this.frameSize = options.frameSize;
+    _this.channels = options.channels || 2;
+    _this.shiftBuffer = pitchShift(function (data) {
+      return onData(assertThisInitialized(assertThisInitialized(_this)), data);
+    }, function () {
+      return _this.pitchValue;
+    }, options);
+    return _this;
+  }
+
+  createClass(Pitch, [{
+    key: "receiveMainLib",
+    value: function receiveMainLib(Sound) {
+      this.Sound = Sound;
+    }
+  }, {
+    key: "connect",
+    value: function connect(preNode) {
+      this.clear();
+      this.disconnect();
+      this.createNode(preNode.context);
+      this.node.connect(preNode);
+    }
+  }, {
+    key: "disconnect",
+    value: function disconnect() {
+      this.node && this.node.disconnect();
+    }
+  }, {
+    key: "createNode",
+    value: function createNode(AudioCtx) {
+      this.node = createProcessingNode(this, AudioCtx, operationalBuffer);
+    }
+  }, {
+    key: "clear",
+    value: function clear() {
+      this.queue = [];
+      this.cache = Object.create(null);
+    }
+  }, {
+    key: "_process",
+    value: function _process(inputData, outputData, isInsertPitch) {
+      this.shiftBuffer(inputData);
+      var resData = this.queue.shift();
+
+      if (resData) {
+        outputData.set(resData);
+        isInsertPitch && freeFloat(this.cache, resData);
+      }
+    }
+  }, {
+    key: "value",
+    get: function get() {
+      return this.pitchValue;
+    },
+    set: function set(v) {
+      if (isNumber(v)) {
+        this.pitchValue = v;
+        this.dispatch('change', v);
+      } else {
+        console.warn('pitch value is not Number');
+      }
+    }
+  }, {
+    key: "skip",
+    get: function get() {
+      return this._skip;
+    },
+    set: function set(v) {
+      this._skip = !!v;
+
+      if (this.Sound) {
+        this.Sound.disconnectNodes();
+        this.Sound.connectNodes();
+      }
+    }
+  }]);
+
+  return Pitch;
+}(Event);
+
+function operationalBuffer(Pitch, input, output) {
+  var process;
+
+  if (!Pitch.useOutLib) {
+    if (Pitch.process) {
+      process = Pitch.process;
+    } else {
+      throw new Error('must defined "process" method');
+    }
+  } else {
+    process = typeof Pitch.process === 'function' ? Pitch.process : Pitch._process;
+  }
+
+  for (var i = 0; i < Pitch.channels; i++) {
+    var inputData = input.getChannelData(i);
+    var outputData = output.getChannelData(i);
+    process.call(Pitch, inputData, outputData, true);
+  }
+}
+
+function onData(Pitch, data) {
+  var buffer = mallocFloat(Pitch.cache, data.length);
+  buffer.set(data);
+  Pitch.queue.push(buffer);
+}
+
+var mediaElementNodes = new WeakMap();
+function createNodes(audioCtx, options, needMedia, audioElment) {
+  var nodes = Object.create(null);
+  nodes.delay = audioCtx.createDelay(179.9);
+  nodes.panner = audioCtx.createPanner();
+  nodes.gainNode = createGainNode(audioCtx);
+  nodes.convolver = audioCtx.createConvolver();
+  nodes.passFilterNode = createFilter(audioCtx);
+  nodes.analyser = createAnalyser(audioCtx, options);
+
+  if (needMedia) {
+    nodes.mediaSource = saveMediaSource(audioCtx, audioElment);
+  } else {
+    nodes.bufferSource = audioCtx.createBufferSource();
+  }
+
+  return nodes;
+}
+function createFilter(audioCtx) {
+  var ra = audioCtx.createBiquadFilter();
+  ra.type = 'peaking';
+  return ra;
+}
+
+function createAnalyser(audioCtx, options) {
+  var analyser = audioCtx.createAnalyser();
+  analyser.fftSize = options.fftSize * 2;
+  return analyser;
+}
+
+function createGainNode(audioCtx) {
+  var ac = audioCtx;
+  return ac[ac.createGain ? 'createGain' : 'createGainNode']();
+}
+
+function saveMediaSource(audioCtx, audio) {
+  if (mediaElementNodes.has(audio)) {
+    return mediaElementNodes.get(audio);
+  } else {
+    var source = audioCtx.createMediaElementSource(audio);
+    mediaElementNodes.set(audio, source);
+    return source;
+  }
+}
+
+function connect(Instance, cb) {
+  var preNode;
+  var nodes = Instance.nodes,
+      filter = Instance.filter,
+      AudioCtx = Instance.AudioCtx,
+      connectOrder = Instance.connectOrder;
+
+  for (var i = 0, len = connectOrder.length; i < len; i++) {
+    var name = connectOrder[i];
+
+    if (i === 0) {
+      nodes[name].connect(AudioCtx.destination);
+      preNode = nodes[name];
+    } else {
+      if (name === 'filterNode') {
+        if (filter.isExist()) {
+          preNode = connectFilterNodes(AudioCtx, filter.hertz, preNode, cb);
+        }
+      } else {
+        if (name === 'convolver') {
+          if (nodes[name].buffer === null) {
+            continue;
+          }
+        }
+
+        if (name === 'bufferSource' || name === 'mediaSource') {
+          var next = function next(toNode) {
+            if (toNode) {
+              if (toNode instanceof Pitch && toNode.node) {
+                preNode = toNode.node;
+              } else {
+                preNode = toNode;
+              }
+            }
+          };
+
+          Instance.dispatch('connect', [preNode, next]);
+        }
+
+        nodes[name].connect(preNode);
+        preNode = nodes[name];
+      }
+    }
+  }
+}
+function connectFilterNodes(audioCtx, hertz, preNode, cb) {
+  if (!hertz) return preNode;
+
+  for (var i = 0, len = hertz.length; i < len; i++) {
+    var hz = hertz[i];
+    var filterNode = createFilter(audioCtx, hz);
+    filterNode.connect(preNode);
+    preNode = filterNode;
+    cb && cb(hz, filterNode);
+  }
+
+  return preNode;
+}
+
 var BasicSupport =
 /*#__PURE__*/
 function (_Event) {
@@ -1121,9 +1131,14 @@ function (_Event) {
               node = _ref2[0],
               connect$$1 = _ref2[1];
 
+          if (lib.skip) return;
           lib.connect(node);
           connect$$1(lib);
         });
+
+        if (typeof lib.receiveMainLib === 'function') {
+          lib.receiveMainLib(this);
+        }
       }
     }
   }, {
@@ -1136,6 +1151,18 @@ function (_Event) {
           _this2.filter.filterNodes[hz] = nowFilter;
         });
       }
+    }
+  }, {
+    key: "disconnectNodes",
+    value: function disconnectNodes() {
+      var nodes = this.nodes;
+      var filterNodes = this.filter.filterNodes;
+      each(nodes, function (node) {
+        return node.disconnect();
+      });
+      each(filterNodes, function (node) {
+        return node.disconnect();
+      });
     }
   }, {
     key: "getNomalTimeAndDuration",
@@ -2437,8 +2464,10 @@ var MediaElement =
 function (_BasicSupport) {
   inherits(MediaElement, _BasicSupport);
 
-  function MediaElement(options) {
+  function MediaElement() {
     var _this;
+
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
     classCallCheck(this, MediaElement);
 
@@ -2448,9 +2477,14 @@ function (_BasicSupport) {
     _this.duration = null;
     _this.delayTimer = null;
     _this.startInfor = null;
-    _this.audio = new Audio();
-    _this.options = filterOptions(options || {});
+    _this.options = filterOptions(options);
+    _this.audio = options.audio || new Audio();
     _this.AudioCtx = createAudioContext(MediaElement);
+
+    if (_this.options.crossOrigin) {
+      _this.audio.crossOrigin = 'anonymous';
+    }
+
     _this.connectOrder = ['panner', 'gainNode', 'convolver', 'analyser', 'passFilterNode', 'filterNode', 'mediaSource'];
     return _this;
   }
@@ -2659,7 +2693,7 @@ function (_BasicSupport) {
           delayTimer = this.delayTimer;
       this.dispatch('stopBefore');
       if (state === 'playing') audio.pause();
-      if (nodes) disconnectNodes(this);
+      if (nodes) this.disconnectNodes();
       if (delayTimer) clearTimeout(delayTimer);
       if (endTimer && endTimer.t) clearTimeout(endTimer.t);
       this.id = null;

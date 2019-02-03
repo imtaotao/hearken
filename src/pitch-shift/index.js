@@ -16,6 +16,8 @@ export default class Pitch extends Event {
 
     this.queue = []
     this.node = null
+    this.Sound = null
+    this._skip = false
     this.pitchValue = 1.0
     this.cache = Object.create(null)
 
@@ -51,6 +53,22 @@ export default class Pitch extends Event {
     } else {
       console.warn('pitch value is not Number');
     }
+  }
+
+  get skip () {
+    return this._skip
+  }
+
+  set skip (v) {
+    this._skip = !!v
+    if (this.Sound) {
+      this.Sound.disconnectNodes()
+      this.Sound.connectNodes()
+    }
+  }
+
+  receiveMainLib (Sound) {
+    this.Sound = Sound
   }
 
   connect (preNode) {

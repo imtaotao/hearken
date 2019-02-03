@@ -3,7 +3,7 @@ const webpack = require('webpack')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = {
-  entry: resolve('./index.js'),
+  entry: resolve('./dev/index.js'),
   output: {
     path: resolve('dist'),
     filename: 'bundle.js',
@@ -24,14 +24,17 @@ module.exports = {
     rules: [
       {
         test: /(\.js|\.grs)$/,
-        use: [{
-          loader: 'babel-loader',
-        },{
-          loader: 'grass-loader',
-          options: {
-            needGrass: true,
+        use: [
+          {
+            loader: 'babel-loader',
           },
-        }]
+          {
+            loader: 'grass-loader',
+            options: {
+              needGrass: true,
+            },
+          },
+        ]
       },
       {
         test: /\.css$/,

@@ -1,4 +1,3 @@
-import { disconnectNodes } from './util'
 import { isObject, isNumber } from '../share'
 
 const INIT = () => {}
@@ -47,7 +46,7 @@ export default class Filter {
   setFilter (hz, val) {
     const { Sound, filterNodes } = this
     if (!Object.keys(filterNodes).length) {
-      disconnectNodes(Sound)
+      Sound.disconnectNodes()
       Sound.connectNodes()
     }
     
@@ -79,7 +78,7 @@ export default class Filter {
             // if filterNodes length is 0, the sound maybe playing, maybe stoped,
             // we need create new filter nodes
             if (!Object.keys(filterNodes).length) {
-              disconnectNodes(Sound)
+              Sound.disconnectNodes()
               Sound.connectNodes()
             }
   
@@ -103,7 +102,7 @@ export default class Filter {
       let keys = Object.keys(this.filterNodes)
 
       if (!keys.length) {
-        disconnectNodes(this.Sound)
+        this.Sound.disconnectNodes()
         this.Sound.connectNodes()
         keys = Object.keys(this.filterNodes)
       }

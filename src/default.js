@@ -3,6 +3,7 @@ export const RATE = 1
 export const DELAY = 0
 export const VOLUME = 1
 export const FFTSIZE = 16
+export const CROSSORIGIN = true
 
 // filter args
 export const DEFAULTHZ = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
