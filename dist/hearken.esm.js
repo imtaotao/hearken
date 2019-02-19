@@ -2738,13 +2738,16 @@ function (_BasicSupport) {
 
       if (state === 'pause') {
         return audio.play().then(function () {
-          var playEnd = _this3.audio.onended;
+          if (endTimer) {
+            var playEnd = _this3.audio.onended;
 
-          if (typeof playEnd === 'function') {
-            endTimer.t = setTimeout(playEnd, endTimer.delayTime);
+            if (typeof playEnd === 'function') {
+              endTimer.t = setTimeout(playEnd, endTimer.delayTime);
+            }
+
+            endTimer.now = Date.now();
           }
 
-          endTimer.now = Date.now();
           _this3.state = 'playing';
 
           _this3.dispatch('play');
@@ -2786,6 +2789,7 @@ Hearken.Pitch = Pitch;
 Hearken.Record = Record;
 Hearken.Stream = Stream;
 Hearken.Media = MediaElement;
+console.log('dev hearken');
 
 export default Hearken;
 export { Pitch, Record, Stream, MediaElement as Media };

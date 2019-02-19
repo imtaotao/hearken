@@ -29,6 +29,7 @@ export function startCoreFn (Instance, time, duration, cb) {
         return
       }
       Instance.state = null
+
       // replay function return result is promise of startCoreFn 
       Instance.dispatch('ended', () => startCoreFn(Instance, time, duration))
     })
@@ -53,6 +54,7 @@ export function startCoreFn (Instance, time, duration, cb) {
           t: setTimeout(playEnd, delayTime),
         }
       }
+
       Instance.state = 'playing'
       Instance.dispatch('start')
       Instance.resumeState()

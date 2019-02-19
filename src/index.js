@@ -8,7 +8,7 @@ Hearken.Pitch = Pitch
 Hearken.Record = Record
 Hearken.Stream = Stream
 Hearken.Media = MediaElement
-
+console.log('dev hearken');
 export {
   Pitch,
   Record,

@@ -241,13 +241,16 @@ export default class MediaElement extends BasicSupport {
     const { state, audio, endTimer } = this
     if (state === 'pause') {
       return audio.play().then(() => {
-        const playEnd = this.audio.onended
-        // add new end function
-        if (typeof playEnd === 'function') {
-          endTimer.t = setTimeout(playEnd, endTimer.delayTime)
+        if (endTimer) {
+          const playEnd = this.audio.onended
+          // add new end function
+          if (typeof playEnd === 'function') {
+            endTimer.t = setTimeout(playEnd, endTimer.delayTime)
+          }
+          // update start play time
+          endTimer.now = Date.now()
         }
-        // update start play time
-        endTimer.now = Date.now()
+
         this.state = 'playing'
         this.dispatch('play')
         return true

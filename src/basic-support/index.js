@@ -56,7 +56,7 @@ export default class BasicSupport extends Event {
     if (!isNumber(time) || time < 0) {
       time = 0
     }
-    
+
     // if duration is not number, duration must be a "undefined"
     duration = isNumber(duration)
       ? duration > 0 

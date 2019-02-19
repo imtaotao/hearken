@@ -14,7 +14,7 @@
       }
     </style>
     media
-    <input value="凉凉 蒙面" id="musicName" @change='this.getMusic'/>
+    <input value="盲点" id="musicName" @change='this.getMusic'/>
     <button @click="this.getMusic">getMusic</button>
     <button @click="this.pause">暂停</button>
     <button @click="this.start">开始</button>
@@ -109,11 +109,20 @@
     getMusic = e => {
       const value = document.getElementById('musicName').value.trim()
       if (value) {
-        fetch('http://localhost:3000/search?keywords=' + value)
-        .then(res => res.json())
-        .then(({result}) => {
-          this.state.songs = result.songs
+        // get('http://localhost:3000/getMusic?name=' + value, res => {
+          
+        // })
+        console.log(value);
+        this.Hearken.ready(() => {
+          this.Hearken.start('http://localhost:3000/getMusic?name=' + value)
         })
+        
+        // fetch('http://localhost:3000/getMusic?name=' + value)
+        // .then(res => res.json())
+        // .then(({result}) => {
+        //   console.log(result);
+        //   this.state.songs = result.songs
+        // })
       }
     }
   }
