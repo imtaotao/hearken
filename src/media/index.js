@@ -26,6 +26,7 @@ export default class MediaElement extends BasicSupport {
     this.audio = options.audio || new Audio()
     this.AudioCtx = createAudioContext(MediaElement)
 
+    this.preload = true
     if (this.options.crossOrigin) {
       this.audio.crossOrigin = 'anonymous'
     }
@@ -125,6 +126,15 @@ export default class MediaElement extends BasicSupport {
     }
     const percent = this.audio.currentTime / duration
     return range(0, 1, percent)
+  }
+
+  getLoading (duration) {
+    const buffered = this.audio.buffered
+    if (buffered.length === 0) return 0
+
+    duration = duration || this.getDuration()
+    const loadingTime = buffered.end(buffered.length - 1)
+    return range(0, 1, loadingTime / duration)
   }
 
   // Delay time is not counted in the total time, affected by rate
@@ -273,5 +283,17 @@ export default class MediaElement extends BasicSupport {
       this.state = 'pause'
       this.dispatch('pause')
     }
+  }
+
+  forward (proportion) {
+    if (isNumber(proportion)) {
+      proportion = range(0, 1, proportion)
+      const val = proportion * this.getDuration()
+      if (isNumber(val)) {
+        this.audio.currentTime = val
+        return true
+      }
+    }
+    return false
   }
 }

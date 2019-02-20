@@ -2504,6 +2504,7 @@ function (_BasicSupport) {
     _this.options = filterOptions(options);
     _this.audio = options.audio || new Audio();
     _this.AudioCtx = createAudioContext(MediaElement);
+    _this.preload = true;
 
     if (_this.options.crossOrigin) {
       _this.audio.crossOrigin = 'anonymous';
@@ -2617,6 +2618,15 @@ function (_BasicSupport) {
 
       var percent = this.audio.currentTime / duration;
       return range(0, 1, percent);
+    }
+  }, {
+    key: "getLoading",
+    value: function getLoading(duration) {
+      var buffered = this.audio.buffered;
+      if (buffered.length === 0) return 0;
+      duration = duration || this.getDuration();
+      var loadingTime = buffered.end(buffered.length - 1);
+      return range(0, 1, loadingTime / duration);
     }
   }, {
     key: "getDuration",
@@ -2779,6 +2789,21 @@ function (_BasicSupport) {
         this.state = 'pause';
         this.dispatch('pause');
       }
+    }
+  }, {
+    key: "forward",
+    value: function forward(proportion) {
+      if (isNumber(proportion)) {
+        proportion = range(0, 1, proportion);
+        var val = proportion * this.getDuration();
+
+        if (isNumber(val)) {
+          this.audio.currentTime = val;
+          return true;
+        }
+      }
+
+      return false;
     }
   }]);
 
