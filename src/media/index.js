@@ -137,10 +137,10 @@ export default class MediaElement extends BasicSupport {
     return range(0, 1, loadingTime / duration)
   }
 
-  // Delay time is not counted in the total time, affected by rate
-  // if duration is 10s, delay is 3s, rate is 1.5, return 15s
+  // Delay time is not counted in the total time
+  // if duration is 10s, delay is 3s, rate is 1.5, return 13s
   getDuration () {
-    const { audio, options, duration, startInfor } = this
+    const { audio, duration, startInfor } = this
 
     if (!audio._src) {
       return null
@@ -169,8 +169,6 @@ export default class MediaElement extends BasicSupport {
         ? duration
         : audio.duration
     }
-    
-    result && (result *= options.rate)
 
     // add forward time
     if (startInfor && startInfor.time) {
@@ -285,12 +283,12 @@ export default class MediaElement extends BasicSupport {
     }
   }
 
-  forward (proportion) {
-    if (isNumber(proportion)) {
-      proportion = range(0, 1, proportion)
-      const val = proportion * this.getDuration()
-      if (isNumber(val)) {
-        this.audio.currentTime = val
+  forward (time) {
+    if (isNumber(time)) {
+      const duration = this.getDuration()
+      if (duration) {
+        time = range(0, duration, time)
+        this.audio.currentTime = time
         return true
       }
     }

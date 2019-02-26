@@ -2632,7 +2632,6 @@ function (_BasicSupport) {
     key: "getDuration",
     value: function getDuration() {
       var audio = this.audio,
-          options = this.options,
           duration = this.duration,
           startInfor = this.startInfor;
 
@@ -2656,8 +2655,6 @@ function (_BasicSupport) {
       } else {
         result = isNumber(duration) && audio.duration > duration ? duration : audio.duration;
       }
-
-      result && (result *= options.rate);
 
       if (startInfor && startInfor.time) {
         result = result ? result + startInfor.time : startInfor.time;
@@ -2792,13 +2789,13 @@ function (_BasicSupport) {
     }
   }, {
     key: "forward",
-    value: function forward(proportion) {
-      if (isNumber(proportion)) {
-        proportion = range(0, 1, proportion);
-        var val = proportion * this.getDuration();
+    value: function forward(time) {
+      if (isNumber(time)) {
+        var duration = this.getDuration();
 
-        if (isNumber(val)) {
-          this.audio.currentTime = val;
+        if (duration) {
+          time = range(0, duration, time);
+          this.audio.currentTime = time;
           return true;
         }
       }
