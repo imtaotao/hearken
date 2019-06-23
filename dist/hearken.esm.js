@@ -2383,11 +2383,14 @@ function startCoreFn$1(Instance, time, duration, cb) {
         Instance.endTimer = null;
       }
 
-      if (options.loop && Instance.state !== 'pause') {
+      if (Instance.state !== 'pause') {
         audio.pause();
         Instance.state === 'pause';
-        startCoreFn$1(Instance, time, duration);
-        return;
+
+        if (options.loop) {
+          startCoreFn$1(Instance, time, duration);
+          return;
+        }
       }
 
       Instance.state = null;

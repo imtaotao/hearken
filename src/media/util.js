@@ -20,14 +20,17 @@ export function startCoreFn (Instance, time, duration, cb) {
         clearTimeout(Instance.endTimer.t)
         Instance.endTimer = null
       }
-      // if the end time is reached, we need to re-looping
-      if (options.loop && Instance.state !== 'pause') {
-        // evertimes loop play, need pause previous play
+      if (Instance.state !== 'pause') {
+        // if the end time is reached, we need to re-looping
         audio.pause()
         Instance.state === 'pause'
-        startCoreFn(Instance, time, duration)
-        return
+        if (options.loop) {
+          // evertimes loop play, need pause previous play
+          startCoreFn(Instance, time, duration)
+          return
+        }
       }
+
       Instance.state = null
 
       // replay function return result is promise of startCoreFn 
